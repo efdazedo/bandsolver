@@ -73,13 +73,17 @@ end;
 % solve y = U*x
 % -------------
 
-for iend=n:(-ku):1,
-    istart = max(1,  iend - (ku) + 1);
+max_k = ceil(n/ku);
+
+for k=max_k:-1:1,
+    istart = 1 + (k-1)*ku;
+    iend = min(n, istart+ku-1);
     x( istart:iend ) = triu(U( istart:iend, istart:iend) ) * x( istart:iend);
+
     i2 = istart -1 ;
     i1 = max(1, i2 - ku + 1);
     isize = i2-i1 + 1;
     if (isize >= 1),
-       x(i1:i2) = x(i1:i2) - (U( i1:i2, istart:iend))*x(istart:iend);
+       x(i1:i2) = x(i1:i2) - tril(U( i1:i2, istart:iend))*x(istart:iend);
     end;
 end;

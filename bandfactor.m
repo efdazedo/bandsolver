@@ -56,8 +56,8 @@ for istart=1:kl:n,
 end;
 
 
-for iend=n:(-ku):1,
-    istart = max(1, iend - ku + 1 );
+for istart=1:ku:n,
+    iend = min(n, istart+ku-1);
     U( istart:iend, istart:iend ) = inv( U(istart:iend, istart:iend) );
 end;
 
