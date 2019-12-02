@@ -52,13 +52,24 @@ end;
 % ------------------------
 for istart=1:kl:n,
     iend = min( n, istart+kl-1);
-    L( istart:iend, istart:iend) = inv( L(istart:iend,istart:iend) );
+    isize = iend - istart + 1;
+
+    % -----------------------------------------------------------------
+    % Compute  using  DTRSM
+    % L( istart:iend, istart:iend) = inv( L(istart:iend,istart:iend) );
+    % -----------------------------------------------------------------
+    L( istart:iend, istart:iend) =  L(istart:iend,istart:iend) \ eye( isize, isize);
 end;
 
 
 for istart=1:ku:n,
     iend = min(n, istart+ku-1);
-    U( istart:iend, istart:iend ) = inv( U(istart:iend, istart:iend) );
+    isize = iend - istart + 1;
+    % -----------------------------------------------------------------
+    % Compute using DTRSM
+    % U( istart:iend, istart:iend ) = inv( U(istart:iend, istart:iend) );
+    % -----------------------------------------------------------------
+    U( istart:iend, istart:iend ) = U(istart:iend, istart:iend) \ eye(isize,isize);
 end;
 
 
@@ -66,4 +77,4 @@ end;
 % generate permutation vector
 % ---------------------------
 ip = reshape( 1:n, n,1);
-old2new = P*ip;
+old2new(1:n) = P*ip(1:n);

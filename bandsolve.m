@@ -59,11 +59,18 @@ x(1:n) = b(old2new(1:n));
 % --------------
 for istart=1:kl:n,
     iend = min(n,istart+kl-1);
+    
+    % -------------------------------------------------------
+    % Compute using  DTRMV  triangular matrix-vector multiply
+    % -------------------------------------------------------
     x(istart:iend) =  tril(L( istart:iend, istart:iend) )* x(istart:iend);
     i1 = iend + 1;
     i2 = min(n, i1 + kl-1);
     isize = i2-i1+1;
     if (isize >= 1),
+      % -------------------------------------------------------
+      % Compute using  DTRMV  triangular matrix-vector multiply
+      % -------------------------------------------------------
       x( i1:i2) = x(i1:i2) - triu(L( i1:i2, istart:iend)) * x(istart:iend);
     end;
 end;
@@ -78,12 +85,18 @@ max_k = ceil(n/ku);
 for k=max_k:-1:1,
     istart = 1 + (k-1)*ku;
     iend = min(n, istart+ku-1);
+    % -------------------------------------------------------
+    % Compute using  DTRMV  triangular matrix-vector multiply
+    % -------------------------------------------------------
     x( istart:iend ) = triu(U( istart:iend, istart:iend) ) * x( istart:iend);
 
     i2 = istart -1 ;
     i1 = max(1, i2 - ku + 1);
     isize = i2-i1 + 1;
     if (isize >= 1),
+       % -------------------------------------------------------
+       % Compute using  DTRMV  triangular matrix-vector multiply
+       % -------------------------------------------------------
        x(i1:i2) = x(i1:i2) - tril(U( i1:i2, istart:iend))*x(istart:iend);
     end;
 end;
