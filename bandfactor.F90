@@ -1,8 +1,5 @@
       subroutine bandfactor( n, A, lda, ipiv, kl, ku, info )
       implicit none
-      integer, parameter :: dp = selected_real_kind(10, 100)
-      integer, parameter :: sp = selected_real_kind(6, 30)
-      integer, parameter :: wp = dp
 
 
       integer, intent(in) :: n, lda
@@ -10,21 +7,6 @@
       integer, intent(inout)  :: kl, ku, info
       complex(kind=wp), intent(inout) :: A(lda,*)
 
-      interface
-	subroutine Ztrsm(side,uplo,transA,diag,m,n,alpha,A,ldA,B,ldB)
-	implicit none
-	character side, uplo, transA, diag
-	integer m,n,ldA,ldB
-	complex*16 alpha, A(ldA,*), B(ldB,*)
-	end subroutine Ztrsm
-
-	subroutine Zgetrf(m,n,A,ldA,ipiv,info)
-	implicit none
-	integer m,n,ldA,info
-	integer ipiv(*)
-	complex*16 A(ldA,*)
-	end subroutine
-      end interface
 
       character :: side, uplo, trans, diag
       integer :: istart,iend,isize

@@ -6,22 +6,14 @@
       implicit none
       integer, intent(in) :: n, kl, ku,ldA,inc
       integer, intent(in) :: old2new(*)
-      complex*16, intent(in) :: A(lda,*)
-      complex*16, intent(inout) :: b(*)
+      complex(kind=wp), intent(in) :: A(lda,*)
+      complex(kind=wp), intent(inout) :: b(*)
 
 
-      interface
-	subroutine Ztrmv( uplo, trans, diag, n, A, ldA, X, incx )
-	implicit none
-	character uplo, trans, diag
-	integer n, ldA, incx
-	complex*16 A(ldA,*), X(*)
-	end subroutine Ztrmv
-      end interface
 
       integer, parameter :: idebug = 1
       logical :: isok
-      complex*16 :: X(n)
+      complex(kind=wp) :: X(n)
       integer :: incx, max_k
       integer :: i1,i2,ib,i,j,k,istart,iend,isize,nn
       character :: uplo, trans, diag

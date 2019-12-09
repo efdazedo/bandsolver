@@ -5,9 +5,6 @@
 ! % with lower bandwidth kl and upper bandwidth ku
 ! % ----------------------
       integer, intent(in) :: n, kl, ku, ldA
-      integer, parameter :: dp = selected_real_kind(15,100)
-      integer, parameter :: sp = selected_real_kind(15,100)
-      integer, parameter :: wp = dp
       complex(kind=wp), intent(inout) :: A(ldA,n)
 
       integer :: i,j
