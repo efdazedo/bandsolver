@@ -39,5 +39,6 @@
 #include "bandfactor_batched.F90"
 #include "bandsolve_batched.F90"
 
+#include "test_band_batched.F90"
 
       end module banded_mod
