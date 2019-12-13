@@ -1,0 +1,3 @@
+FC=pgf90
+FFLAGS=-g -mp
+LIBS=lib.a -llapack -lblas
