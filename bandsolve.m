@@ -72,6 +72,11 @@ for istart=1:kl:n,
       % Compute using  DTRMV  triangular matrix-vector multiply
       % -------------------------------------------------------
       x( i1:i2) = x(i1:i2) - triu(L( i1:i2, istart:iend)) * x(istart:iend);
+      is_square = (i2-i1+1) == (iend-istart+1);
+      if (~is_square),
+        disp(sprintf('non-square DTRMV: i1=%d, i2=%d, istart=%d, iend=%d', ...
+		                        i1,    i2,    istart,    iend ));
+      end;
     end;
 end;
 
@@ -98,5 +103,10 @@ for k=max_k:-1:1,
        % Compute using  DTRMV  triangular matrix-vector multiply
        % -------------------------------------------------------
        x(i1:i2) = x(i1:i2) - tril(U( i1:i2, istart:iend))*x(istart:iend);
+       is_square = (i2-i1+1) == (iend-istart+1);
+       if (~is_square),
+         disp(sprintf('y = U*x: non-square i1=%d, i2=%d, istart=%d, iend=%d', ...
+		                           i1,    i2,    istart,    iend ));
+       end;
     end;
 end;
