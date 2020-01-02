@@ -13,7 +13,7 @@
        complex(kind=wp), allocatable :: x(:,:), xnew(:,:), b(:,:)
        integer, allocatable :: ipiv(:,:)
 
-       integer :: ldA,inc
+       integer :: ldA,ldB
        integer :: ibatch, i, info
        logical :: isok
 
@@ -80,9 +80,9 @@
 	endif
 
 
-       inc = 1
+       ldB = size(B,1)
        call bandsolve_batched(n, kl_array,ku_array,A,ldA,                             &
-     &                  ipiv,b,inc,batchCount)
+     &                  ipiv,b,ldB,batchCount)
 
        do ibatch=1,batchCount
 	  xnew(1:n,ibatch) = b(1:n,ibatch)

@@ -1,4 +1,6 @@
 include make.inc
+CSRC=\
+     trmv_sm.cpp
 FSRC=\
 	banded_mod.F90  \
 	bandfactor.F90  \
@@ -10,11 +12,17 @@ FSRC=\
 	test_band_batched.F90
 
 CSRC=\
-	ztrmv_sm.hpp \
+	ztrmv_sm.hpp 
+
+
+test1: banded_mod.o test1.F90 trmv_sm.o
+	$(FC) $(FFLAGS) -o test1 test1.F90  banded_mod.o trmv_sm.o $(LIBS)
 
 banded_mod.o: $(FSRC)
 	$(FC) $(FFLAGS) -c banded_mod.F90
 
-
-test1: banded_mod.o test1.F90
-	$(FC) $(FFLAGS) -o test1 test1.F90  banded_mod.o $(LIBS)
+trmv_sm.o: trmv_sm.hpp trmv_sm.cpp
+	$(CXX) $(CXXFLAGS) -c trmv_sm.cpp
+clean:
+	touch test1 banded_mod.o banded_mod.mod
+	rm test1 *.o *.mod

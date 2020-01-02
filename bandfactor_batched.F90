@@ -10,6 +10,9 @@
 
       integer :: ibatch,kl,ku,info
 
+      info = 0
+      kl = 0
+      ku = 0
 !$omp parallel do private(ibatch,kl,ku,info)
       do ibatch=1,batchCount
 	 call bandfactor(n,A(1,1,ibatch),lda,ipiv(1,ibatch),kl,ku,info)
