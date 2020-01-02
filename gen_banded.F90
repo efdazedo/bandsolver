@@ -10,6 +10,7 @@
       integer :: i,j
       real(kind=wp) :: x_re(n), x_im(n)
       complex(kind=wp) :: aij
+      integer, parameter :: idebug = 1
 
       do j=1,n
 	 call random_number( x_re(1:n) )
@@ -27,6 +28,17 @@
 	   A(i,j) = aij
 	 enddo
       enddo
+
+      if (idebug >= 1) then
+!      -----------------------------
+!      make diagonal to be very large
+!      to avoid pivoting
+!      -----------------------------
+       do j=1,n
+         i = j
+         A(i,j) = 2*n*n
+       enddo
+     endif
 
       return
       end subroutine gen_banded

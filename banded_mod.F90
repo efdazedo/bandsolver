@@ -30,14 +30,14 @@
       end interface
 
       interface
-         subroutine Ztrmv_sm( uplo,transA,diag,                         &
-     &      m,n,A,ldA,x,incx) bind(C,name='ztrmv_sm')
+         subroutine Ztrmv_sm( uplo,transA,                             &
+     &      m,n,A,ldA,x,v) bind(C,name='ztrmv_sm')
          use iso_c_binding
          implicit none
-         character(kind=c_char), value :: uplo,transA,diag
-         integer(kind=c_int), value :: m,n,ldA,incx
-         complex(kind=c_double_complex) :: A(*), x(*)
-!         type(c_ptr), value :: A, x
+         character(kind=c_char), value :: uplo,transA
+         integer(kind=c_int), value :: m,n,ldA
+         complex(kind=c_double_complex) :: A(*), x(*),v(*)
+!         type(c_ptr), value :: A, x, v
          end subroutine Ztrmv_sm
       end interface
 

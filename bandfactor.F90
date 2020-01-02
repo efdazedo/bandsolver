@@ -13,7 +13,7 @@
       logical :: isupper,islower,isok
       integer :: mm, nn
       integer :: old2new(n)
-      integer :: i,j, itemp
+      integer :: i,j, itemp, ia,ja
       integer :: ldL, ldU
       complex(kind=wp), allocatable :: Linv(:,:), Uinv(:,:)
       complex(kind=wp) :: alpha
@@ -92,7 +92,17 @@
        alpha = 1
        call Ztrsm( side,uplo,trans,diag, mm,nn,alpha,                                           &
      &             A(istart,istart),ldA,Linv,ldL)
-       A(istart:iend,istart:iend) = Linv(1:isize,1:isize)
+
+!       -------------------------------------------------------
+!      copy lower triangular Linv back to A, note Linv also is unit diagonal
+!       -------------------------------------------------------
+        do j=1,nn
+        do i=(j+1),mm
+          ia = (istart-1) + i
+          ja = (istart-1) + j
+          A( ia,ja) = Linv(i,j)
+        enddo
+        enddo
 
        enddo
 !
@@ -125,7 +135,17 @@
         call Ztrsm( side, uplo, trans, diag, mm,nn,alpha,                                   &
      &              A(istart,istart),ldA,Uinv,ldU)
 
-	A(istart:iend,istart:iend) = Uinv( 1:isize, 1:isize )
+!       ---------------
+!       copy upper triangular Uinv back to A
+!       ---------------
+        do j=1,nn
+        do i=1,j
+          ia = (istart-1) + i
+          ja = (istart-1) + j
+          A(ia,ja) = Uinv(i,j)
+        enddo
+        enddo
+
        enddo
 
        deallocate( Linv, Uinv )

@@ -15,7 +15,7 @@
       integer, parameter :: idebug = 1
       integer :: istat
       logical :: is_square
-      complex(kind=wp), target, allocatable :: x(:)
+      complex(kind=wp), target  :: x(n), v(max(kl,ku))
       integer :: inc, incx, max_k
       integer :: i1,i2,ib,i,j,k,istart,iend,isize,nn
       character :: uplo, trans, diag
@@ -37,20 +37,12 @@
 ! % -------------------
 ! % perform permutation
 ! % -------------------
-! x(1:n) = b(old2new(1:n));
 
-      allocate( x(n), stat=istat)
-      if (istat.ne.0) then
-          print*,'alloc(x(n)), n=',n,'istat=',istat
-          stop '** error in bandsolve'
-      endif
-
-      inc = 1
       do i=1,n
-	j = old2new(i)
-	ib = 1 + (j-1)*inc
-	x(i) = b(ib)
+       j = old2new(i)
+       x(j) = b(i)
       enddo
+
 
 ! % --------------
 ! % solve L*y = P*b
@@ -75,31 +67,38 @@
         call Ztrmv(uplo,trans,diag,nn,A(istart,istart),ldA,              &
      &             x(istart),incx)
 
-        i1 = iend + 1;
-        i2 = min(n, i1 + kl-1);
-        mm = i2-i1 + 1
-        nn = iend-istart+1
-
-        if ((mm >= 1).and.(nn >= 1)) then
 !       % -------------------------------------------------------
 !       % Compute using  DTRMV  triangular matrix-vector multiply
 !       % -------------------------------------------------------
 !       ---------------------------------------------------------------------
 !       x( i1:i2) = x(i1:i2) - triu(L( i1:i2, istart:iend)) * x(istart:iend);
 !       ---------------------------------------------------------------------
+        i1 = iend + 1;
+        i2 = min(n, i1 + kl-1);
+        mm = i2-i1 + 1
+        nn = iend-istart+1
+
+        if ((mm >= 1).and.(nn >= 1)) then
 
 	  is_square  = (nn .eq. mm)
           if (is_square) then
 	    uplo = 'Upper'
 	    trans = 'NoTrans'
 	    diag = 'NonUnit'
+            do i=1,(iend-istart+1)
+              v(i) = x( (istart-1)+i)
+            enddo
             call Ztrmv( uplo, trans, diag, nn, A(i1,istart), ldA,        &
-     &                x(istart), incx)
+     &                v, incx)
           else
-            call Ztrmv_sm(uplo,trans,diag,mm,nn,                         &
-!     &            c_loc(A(i1,istart)),ldA, c_loc(x(istart)), incx)
-     &            A(i1,istart),ldA, x(istart), incx)
+            call Ztrmv_sm(uplo,trans,mm,nn,                         &
+!     &            c_loc(A(i1,istart)),ldA, c_loc(x(istart)), c_loc(v))
+     &            A(i1,istart),ldA, x(istart), v)
           endif
+
+          do i=1,(i2-i1+1)
+               x( (i1-1)+i ) = x( (i1-1)+i) - v(i)
+          enddo
 	endif
        enddo
 !
@@ -127,30 +126,37 @@
        call Ztrmv(uplo,trans,diag,nn,A(istart,istart),ldA,               &
      &            x(istart),incx)
 !
-       i2 = istart -1 ;
-       i1 = max(1, i2 - ku + 1);
-       isize = i2 - i1 + 1
-       mm = i2-i1 +1
-       nn = iend - istart + 1
-       if ((mm >= 1).and.(nn >= 1)) then
 !        % -------------------------------------------------------
 !        % Compute using  DTRMV  triangular matrix-vector multiply
 !        % -------------------------------------------------------
 !        ------------------------------------------------------------------
 !        x(i1:i2) = x(i1:i2) - tril(U( i1:i2, istart:iend))*x(istart:iend);
 !        ------------------------------------------------------------------
+       i2 = istart -1 ;
+       i1 = max(1, i2 - ku + 1);
+       isize = i2 - i1 + 1
+       mm = i2-i1 +1
+       nn = iend - istart + 1
+       if ((mm >= 1).and.(nn >= 1)) then
          is_square = (mm .eq. nn)
          uplo = 'Lower'
 	 trans = 'NoTrans'
 	 diag = 'NonUnit'
          if (is_square) then
+           do i=1,(iend-istart+1)
+              v(i) = x( (istart-1) + i)
+           enddo
            call Ztrmv( uplo,trans,diag,nn,                               &
-     &                 A(i1,istart),ldA,x(istart),incx)
+     &                 A(i1,istart),ldA,v,incx)
          else
-           call Ztrmv_sm(uplo,trans,diag,mm,nn,                          &
-!     &             c_loc(A(i1,istart)),ldA,c_loc(x(istart)),incx)
-     &             A(i1,istart),ldA,x(istart),incx)
+           call Ztrmv_sm(uplo,trans,mm,nn,                               &
+!     &             c_loc(A(i1,istart)),ldA,c_loc(x(istart)),c_loc(v))
+     &             A(i1,istart),ldA,x(i1),v)
          endif
+
+         do i=1,(i2-i1+1)
+              x( (i1-1)+i) = x( (i1-1)+i) - v(i)
+         enddo
 	endif
        enddo
 
@@ -158,11 +164,9 @@
 !      copy solution 
 !      -------------
        do i=1,n
-	 ib = 1 + (i-1)*inc
-	 b(ib) = x(i)
+          b(i) = x(i)
        enddo
 
-       deallocate( x )
 
        return
        end subroutine bandsolve
