@@ -7,7 +7,7 @@ function [ x ] = bandsolve( n,kl,ku, L,U,old2new,  b )
 % diagonal blocks of L has explicit inverse
 % diagonal blocks of U has explicit inverse
 % -------------------------------
-idebug = 1;
+idebug = 2;
 
 n = size(L,1);
 x = zeros(n,1);
@@ -38,6 +38,14 @@ if (idebug >= 1),
   clear ilist;
   clear jlist;
   clear alist;
+end;
+
+if (idebug >= 2),
+   % -------------------------------------------
+   % add junk to L and U to check access pattern
+   % -------------------------------------------
+   L = L + triu( rand(size(L)), 1);
+   U = U + tril( rand(size(U)), -1);
 end;
 
 
@@ -73,7 +81,7 @@ for istart=1:kl:n,
       % -------------------------------------------------------
       x( i1:i2) = x(i1:i2) - triu(L( i1:i2, istart:iend)) * x(istart:iend);
       is_square = (i2-i1+1) == (iend-istart+1);
-      if (~is_square),
+      if (!is_square),
         disp(sprintf('non-square DTRMV: i1=%d, i2=%d, istart=%d, iend=%d', ...
 		                        i1,    i2,    istart,    iend ));
       end;
@@ -104,7 +112,7 @@ for k=max_k:-1:1,
        % -------------------------------------------------------
        x(i1:i2) = x(i1:i2) - tril(U( i1:i2, istart:iend))*x(istart:iend);
        is_square = (i2-i1+1) == (iend-istart+1);
-       if (~is_square),
+       if (!is_square),
          disp(sprintf('y = U*x: non-square i1=%d, i2=%d, istart=%d, iend=%d', ...
 		                           i1,    i2,    istart,    iend ));
        end;
