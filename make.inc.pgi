@@ -1,5 +1,5 @@
 FC=pgf90
 CXX=pgc++
-FFLAGS=-g  -C
+FFLAGS=-g  -C -Mstack_arrays
 CXXFLAGS=-g  -std=c++11
 LIBS= -llapack -lblas
