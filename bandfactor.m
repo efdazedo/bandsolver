@@ -6,6 +6,8 @@ function [L,U,old2new, kl,ku] = bandfactor( A )
 % to estimate the lower and upper bandwidth in L and U factors
 % ------------------------------------------------------------
 
+idebug = 1;
+
 n = size(A,1);
 is_square = (size(A,1) == size(A,2));
 if (~is_square),
@@ -46,6 +48,10 @@ end;
 % precompute the explicit inverse for
 % triangular blocks in L and U
 % ------------------------------
+if (idebug >= 1),
+    disp(sprintf('bandfactor:n=%d, kl=%d, ku=%d', ...
+                             n,    kl,    ku ));
+end;
 
 % ------------------------
 % note L has unit diagonal

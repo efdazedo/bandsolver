@@ -38,10 +38,8 @@
 ! % perform permutation
 ! % -------------------
 
-      do i=1,n
-       j = old2new(i)
-       x(j) = b(i)
-      enddo
+       x(1:n) = b( old2new(1:n) )
+!      x(old2new(1:n)) = b(1:n)
 
 
 ! % --------------
@@ -72,6 +70,9 @@
 !       % -------------------------------------------------------
 !       ---------------------------------------------------------------------
 !       x( i1:i2) = x(i1:i2) - triu(L( i1:i2, istart:iend)) * x(istart:iend);
+!       computed as 
+!        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
+!        x( i1:i2) = x(i1:i2) - v(:)
 !       ---------------------------------------------------------------------
         i1 = iend + 1;
         i2 = min(n, i1 + kl-1);
@@ -85,17 +86,25 @@
 	    uplo = 'Upper'
 	    trans = 'NoTrans'
 	    diag = 'NonUnit'
+!        -----------------------------------------------------
+!        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
+!        -----------------------------------------------------
             do i=1,(iend-istart+1)
               v(i) = x( (istart-1)+i)
             enddo
             call Ztrmv( uplo, trans, diag, nn, A(i1,istart), ldA,        &
      &                v, incx)
           else
-            call Ztrmv_sm(uplo,trans,mm,nn,                         &
-!     &            c_loc(A(i1,istart)),ldA, c_loc(x(istart)), c_loc(v))
+!        -----------------------------------------------------
+!        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
+!        -----------------------------------------------------
+            call Ztrmv_smf(uplo,trans,mm,nn,                         &
      &            A(i1,istart),ldA, x(istart), v)
           endif
 
+!        ---------------------------
+!        x( i1:i2) = x(i1:i2) - v(:)
+!        ---------------------------
           do i=1,(i2-i1+1)
                x( (i1-1)+i ) = x( (i1-1)+i) - v(i)
           enddo
@@ -107,6 +116,10 @@
 ! % -------------
 !
       max_k = iceil(n,ku)
+      if (idebug >= 1) then
+              print*,'bandsolve:n,ku,max_k', n,ku,max_k
+      endif
+
       do k=max_k,1,-1
       istart = 1 + (k-1)*ku;
       iend = min(n, istart+ku-1);
@@ -131,6 +144,9 @@
 !        % -------------------------------------------------------
 !        ------------------------------------------------------------------
 !        x(i1:i2) = x(i1:i2) - tril(U( i1:i2, istart:iend))*x(istart:iend);
+!
+!        let   v(:) = tril( U(i1:i2, istart:iend)) * x(istart:iend)
+!              x(i1:i2) = x(i1:i2) - v(:)
 !        ------------------------------------------------------------------
        i2 = istart -1 ;
        i1 = max(1, i2 - ku + 1);
@@ -143,17 +159,25 @@
 	 trans = 'NoTrans'
 	 diag = 'NonUnit'
          if (is_square) then
+!        -----------------------------------------------------------
+!        let   v(:) = tril( U(i1:i2, istart:iend)) * x(istart:iend)
+!        -----------------------------------------------------------
            do i=1,(iend-istart+1)
               v(i) = x( (istart-1) + i)
            enddo
            call Ztrmv( uplo,trans,diag,nn,                               &
      &                 A(i1,istart),ldA,v,incx)
          else
-           call Ztrmv_sm(uplo,trans,mm,nn,                               &
-!     &             c_loc(A(i1,istart)),ldA,c_loc(x(istart)),c_loc(v))
-     &             A(i1,istart),ldA,x(i1),v)
+!        -----------------------------------------------------------
+!        let   v(:) = tril( U(i1:i2, istart:iend)) * x(istart:iend)
+!        -----------------------------------------------------------
+           call Ztrmv_smf(uplo,trans,mm,nn,                               &
+     &             A(i1,istart),ldA,x(istart),v)
          endif
 
+!              --------------------------
+!              x(i1:i2) = x(i1:i2) - v(:)
+!              --------------------------
          do i=1,(i2-i1+1)
               x( (i1-1)+i) = x( (i1-1)+i) - v(i)
          enddo

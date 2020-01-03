@@ -3,6 +3,7 @@ CSRC=\
      trmv_sm.cpp
 FSRC=\
 	banded_mod.F90  \
+	ztrmv_smf.F90 \
 	bandfactor.F90  \
 	bandfactor_batched.F90  \
 	bandsolve.F90  \

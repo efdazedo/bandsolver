@@ -5,9 +5,9 @@
       integer :: n, kl, ku, batchCount
       real(kind=wp) :: max_err, max_res
 
-      n = 100
-      kl = 12
-      ku = 13
+      n = 10
+      kl = n-1
+      ku = n-1
       batchCount = 1
       print*,'n, kl, ku, batchCount ', n,kl,ku,batchCount
 

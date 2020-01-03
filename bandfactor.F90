@@ -1,9 +1,10 @@
-      subroutine bandfactor( n, A, lda, ipiv, kl, ku, info )
+      subroutine bandfactor( n, A, lda, old2new, kl, ku, info )
       implicit none
 
+      integer, parameter :: idebug = 1
 
       integer, intent(in) :: n, lda
-      integer, intent(inout) :: ipiv(*)
+      integer, intent(inout) :: old2new(*)
       integer, intent(inout)  :: kl, ku, info
       complex(kind=wp), intent(inout) :: A(lda,*)
 
@@ -12,7 +13,7 @@
       integer :: istart,iend,isize
       logical :: isupper,islower,isok
       integer :: mm, nn
-      integer :: old2new(n)
+      integer :: ipiv(n)
       integer :: i,j, itemp, ia,ja
       integer :: ldL, ldU
       complex(kind=wp), allocatable :: Linv(:,:), Uinv(:,:)
@@ -54,6 +55,10 @@
 	 endif
        enddo
        enddo
+
+       if (idebug >= 1) then
+            print*,'bandfactor:n,kl,ku', n,kl,ku
+       endif
 !
 !% ------------------------------
 !% precompute the explicit inverse for

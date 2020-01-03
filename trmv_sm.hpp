@@ -35,6 +35,11 @@ double conj( double x ) {
 	return(x);
 }
 
+static inline
+float conj( float x ) {
+	return(x);
+}
+
 
 static inline
 zcomplex conj( zcomplex x ) {
@@ -104,7 +109,7 @@ void trmv_sm( char const uplo,
                 int ii = isnotrans ?  ia : ja;
                 int jj = isnotrans ?  ja : ia;
 
-                T const xj = x(jj);
+                T const xj = x(ja);
                 T aij = (islower && (ii >= jj)) ||
                         (isupper && (ii <= jj)) ? A(ii,jj) : 0;
 

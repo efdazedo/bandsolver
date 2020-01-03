@@ -10,7 +10,7 @@
       integer :: i,j
       real(kind=wp) :: x_re(n), x_im(n)
       complex(kind=wp) :: aij
-      integer, parameter :: idebug = 1
+      integer, parameter :: idebug = 2
 
       do j=1,n
 	 call random_number( x_re(1:n) )
@@ -36,7 +36,7 @@
 !      -----------------------------
        do j=1,n
          i = j
-         A(i,j) = 2*n*n
+         A(i,j) = max(1.0d4,2.0d0*n*n)
        enddo
      endif
 

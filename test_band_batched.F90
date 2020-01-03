@@ -10,14 +10,15 @@
        integer, parameter :: idebug = 1
        complex(kind=wp), allocatable :: A(:,:,:)
        complex(kind=wp), allocatable :: Aorg(:,:,:)
-       complex(kind=wp), allocatable :: x(:,:), xnew(:,:), b(:,:)
-       integer, allocatable :: ipiv(:,:)
+       complex(kind=wp), allocatable :: x(:,:), xnew(:,:),xdiff(:,:) 
+       complex(kind=wp), allocatable :: b(:,:),res(:,:)
+       integer, allocatable :: old2new(:,:)
 
        integer :: ldA,ldB
        integer :: ibatch, i, info
        logical :: isok
 
-       real(kind=wp) :: err, res
+       real(kind=wp) :: err 
        real(kind=wp) :: x_re(n), x_im(n)
        integer :: kl_array(batchCount)
        integer :: ku_array(batchCount)
@@ -29,7 +30,7 @@
        max_res = huge
 
       ldA = n
-      allocate( ipiv(n,batchCount) )
+      allocate( old2new(n,batchCount) )
       allocate( A(ldA, n, batchCount), Aorg(ldA,n,batchCount)  )
       call gen_banded_batched( n, kl, ku, A, lda, batchCount)
 
@@ -39,6 +40,7 @@
       enddo
 
       allocate( b(n,batchCount), x(n,batchCount), xnew(n,batchCount) )
+      allocate( xdiff(n,batchCount), res(n,batchCount))
 
 !$omp parallel do private(ibatch,x_re,x_im,i)
       do ibatch=1,batchCount
@@ -66,7 +68,7 @@
 ! % kl2 ~ 2*(kl+ku), ku2 ~ 2*ku
 ! % ---------------------
 
-       call bandfactor_batched(n,A,lda,ipiv,kl_array,ku_array,                        &
+       call bandfactor_batched(n,A,lda,old2new,kl_array,ku_array,           &
      &              info_array, batchCount)
        isok = all( info_array(1:batchCount).eq.0 )
        if (.not.isok) then
@@ -81,8 +83,8 @@
 
 
        ldB = size(B,1)
-       call bandsolve_batched(n, kl_array,ku_array,A,ldA,                             &
-     &                  ipiv,b,ldB,batchCount)
+       call bandsolve_batched(n, kl_array,ku_array,A,ldA,                &
+     &                  old2new,b,ldB,batchCount)
 
        do ibatch=1,batchCount
 	  xnew(1:n,ibatch) = b(1:n,ibatch)
@@ -90,31 +92,38 @@
 
        max_err = 0
        max_res = 0
+
+!      ----------------------------------
+!      compute  xdiff(:) = xnew(:) - x(:)
+!      ----------------------------------
        do ibatch=1,batchCount
 	  do i=1,n
-            err = abs( xnew(i,ibatch) - x(i,ibatch) )
+            xdiff(i,ibatch) = xnew(i,ibatch) - x(i,ibatch)
+            err = abs( xdiff(i,ibatch) )
 	    max_err = max( max_err, err )
 	  enddo
        enddo
 
+!      -------------------------------------------
+!      compute residual vector, res = Aorg * xdiff
+!      -------------------------------------------
        do ibatch=1,batchCount
-	b(1:n,ibatch) = matmul( Aorg(1:n,1:n,ibatch), xnew(1:n,ibatch) )
-	b(1:n,ibatch) = b(1:n,ibatch) - matmul(Aorg(1:n,1:n,ibatch),x(1:n,ibatch))
+	res(1:n,ibatch) = matmul( Aorg(1:n,1:n,ibatch), xdiff(1:n,ibatch))
        enddo
 
        do ibatch=1,batchCount
        do i=1,n
-	  res = abs( b(i,ibatch) )
-	  max_res = max( max_res, res )
+	  max_res = max( max_res, abs(res(i,ibatch)) )
        enddo
        enddo
 
 !      --------
 !      clean up
 !      --------
+       deallocate( res, xdiff )
        deallocate( b, x, xnew )
        deallocate( A, Aorg )
-       deallocate( ipiv )
+       deallocate( old2new )
 
        return
        end subroutine test_band_batched
