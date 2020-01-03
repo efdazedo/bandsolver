@@ -1,7 +1,7 @@
       subroutine bandfactor( n, A, lda, old2new, kl, ku, info )
       implicit none
 
-      integer, parameter :: idebug = 2
+      integer, parameter :: idebug = 0
 
       integer, intent(in) :: n, lda
       integer, intent(inout) :: old2new(*)

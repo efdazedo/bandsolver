@@ -12,7 +12,7 @@
 
 
 
-      integer, parameter :: idebug = 3
+      integer, parameter :: idebug = 0
       integer :: istat
       logical :: is_square
       complex(kind=wp), target  :: x(n), v(max(kl,ku))
@@ -103,7 +103,7 @@
 !        -----------------------------------------------------
 !        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
 !        -----------------------------------------------------
-            call Ztrmv_smf(uplo,trans,mm,nn,                         &
+            call Ztrmv_sm(uplo,trans,mm,nn,                             &
      &            A(i1,istart),ldA, x(istart), v)
 
             if (idebug >= 3) then
@@ -202,7 +202,7 @@
 !        -----------------------------------------------------------
 !        let   v(:) = tril( U(i1:i2, istart:iend)) * x(istart:iend)
 !        -----------------------------------------------------------
-           call Ztrmv_smf(uplo,trans,mm,nn,                               &
+           call Ztrmv_sm(uplo,trans,mm,nn,                               &
      &             A(i1,istart),ldA,x(istart),v)
 
          endif

@@ -5,10 +5,10 @@
       integer :: n, kl, ku, batchCount
       real(kind=wp) :: max_err, max_res
 
-      n = 5
-      kl = n-1
-      ku = n-1
-      batchCount = 1
+      n = 100
+      kl = 11
+      ku = 13
+      batchCount = 10
       print*,'n, kl, ku, batchCount ', n,kl,ku,batchCount
 
       call test_band_batched(n,kl,ku,                                    &
