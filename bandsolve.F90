@@ -12,6 +12,7 @@
 
 
 
+      logical :: use_trmv_sm = .true.
       integer, parameter :: idebug = 0
       integer :: istat
       logical :: is_square
@@ -66,9 +67,20 @@
         trans = 'NoTrans'
         diag = 'Unit'
         nn = isize
+        mm = nn
         incx = 1
-        call Ztrmv(uplo,trans,diag,nn,A(istart,istart),ldA,              &
+
+        use_trmv_sm = .true.
+        if (use_trmv_sm) then
+           call Ztrmv_sm(uplo,trans,diag,mm,nn,A(istart,istart),ldA,         &
+     &             x(istart), v )
+           do i=1,mm
+              x( (istart-1) + i) = v(i)
+           enddo
+        else
+          call Ztrmv(uplo,trans,diag,nn,A(istart,istart),ldA,              &
      &             x(istart),incx)
+        endif
 
 !       % -------------------------------------------------------
 !       % Compute using  DTRMV  triangular matrix-vector multiply
@@ -167,9 +179,20 @@
        trans = 'NoTrans'
        diag = 'NonUnit'
        nn = isize
+       mm = nn
        incx = 1
-       call Ztrmv(uplo,trans,diag,nn,A(istart,istart),ldA,               &
+
+       use_trmv_sm = .true.
+       if (use_trmv_sm) then
+         call Ztrmv_sm(uplo,trans,diag,mm,nn,A(istart,istart),lda,         &
+     &            x(istart),v)
+         do i=1,mm
+           x((istart-1)+i) = v(i)
+         enddo
+       else
+         call Ztrmv(uplo,trans,diag,nn,A(istart,istart),ldA,               &
      &            x(istart),incx)
+       endif
 !
 !        % -------------------------------------------------------
 !        % Compute using  DTRMV  triangular matrix-vector multiply
