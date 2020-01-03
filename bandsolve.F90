@@ -90,6 +90,7 @@
             diag = 'NonUnit'
 
           is_square  = (nn .eq. mm)
+          is_square = .false.
           if (is_square) then
 !        -----------------------------------------------------
 !        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
@@ -103,7 +104,7 @@
 !        -----------------------------------------------------
 !        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
 !        -----------------------------------------------------
-            call Ztrmv_sm(uplo,trans,mm,nn,                              &
+            call Ztrmv_sm(uplo,trans,diag,mm,nn,                          &
      &            A(i1,istart),ldA, x(istart), v)
 
             if (idebug >= 3) then
@@ -186,6 +187,7 @@
        nn = iend - istart + 1
        if ((mm >= 1).and.(nn >= 1)) then
          is_square = (mm .eq. nn)
+         is_square = .false.
          uplo = 'Lower'
          trans = 'NoTrans'
          diag = 'NonUnit'
@@ -202,7 +204,7 @@
 !        -----------------------------------------------------------
 !        let   v(:) = tril( U(i1:i2, istart:iend)) * x(istart:iend)
 !        -----------------------------------------------------------
-           call Ztrmv_sm(uplo,trans,mm,nn,                               &
+           call Ztrmv_sm(uplo,trans,diag,mm,nn,                          &
      &             A(i1,istart),ldA,x(istart),v)
 
          endif

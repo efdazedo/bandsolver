@@ -8,6 +8,7 @@ extern "C" {
 
 void ztrmv_sm( char const uplo, 
 	      char const trans, 
+	      char const diag, 
               int const m,
 	      int const n, 
 	      zcomplex const A_[], 
@@ -15,7 +16,7 @@ void ztrmv_sm( char const uplo,
 	      zcomplex x_[], 
 	      zcomplex v_[])
 {
-        trmv_sm<zcomplex>( uplo, trans, 
+        trmv_sm<zcomplex>( uplo, trans, diag,
                            m,n,
                            A_, lda, x_, v_ );
 }
@@ -23,6 +24,7 @@ void ztrmv_sm( char const uplo,
 
 void ctrmv_sm( char const uplo, 
 	      char const trans, 
+	      char const diag, 
               int const m,
 	      int const n, 
 	      ccomplex const A_[], 
@@ -30,7 +32,7 @@ void ctrmv_sm( char const uplo,
 	      ccomplex x_[], 
 	      ccomplex v_[] )
 {
-        trmv_sm<ccomplex>( uplo, trans, 
+        trmv_sm<ccomplex>( uplo, trans, diag,
                            m,n,
                            A_, lda, x_, v_ );
 
@@ -39,6 +41,7 @@ void ctrmv_sm( char const uplo,
 
 void dtrmv_sm( char const uplo, 
 	      char const trans, 
+	      char const diag, 
               int const m,
 	      int const n, 
 	      double const A_[], 
@@ -46,13 +49,14 @@ void dtrmv_sm( char const uplo,
 	      double x_[], 
 	      double v_[] )
 {
-        trmv_sm<double>( uplo, trans, 
+        trmv_sm<double>( uplo, trans, diag,
                            m,n,
                            A_, lda, x_, v_ );
 }
 
 void strmv_sm( char const uplo, 
 	      char const trans, 
+	      char const diag, 
               int const m,
 	      int const n, 
 	      float const A_[], 
@@ -60,7 +64,7 @@ void strmv_sm( char const uplo,
 	      float x_[], 
 	      float v_[]) 
 {
-        trmv_sm<float>( uplo, trans, 
+        trmv_sm<float>( uplo, trans, diag,
                            m,n,
                            A_, lda, x_, v_ );
 }

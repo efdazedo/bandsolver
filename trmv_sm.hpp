@@ -63,6 +63,7 @@ int indx2f( int const i, int const j, int const ld) {
 template<typename T>
 void trmv_sm( char const uplo, 
 	      char const trans, 
+              char const diag,
               int const m,
 	      int const n, 
 	      T const A_[], 
@@ -75,6 +76,7 @@ void trmv_sm( char const uplo,
 	bool const istranspose = (trans == 'T') || (trans == 't');
 	bool const isconj = (trans == 'C') || (trans == 'c');
 	bool const isnotrans = (!istranspose) && (!isconj);
+        bool const isunitdiag = (diag == 'U') || (diag == 'u');
 
 
         assert( isupper || islower );
@@ -113,6 +115,7 @@ void trmv_sm( char const uplo,
                 T aij = (islower && (ii >= jj)) ||
                         (isupper && (ii <= jj)) ? A(ii,jj) : 0;
 
+                aij = (isunitdiag && (ii == jj)) ? 1 : aij;
                 aij = (isconj) ? conj(aij) : aij;
 
                 vi += aij * xj;

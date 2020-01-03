@@ -1,6 +1,6 @@
-      subroutine Ztrmv_smf(uplo,trans,m,n,A_in,lda,x,v)
+      subroutine Ztrmv_smf(uplo,trans,diag,m,n,A_in,lda,x,v)
       implicit none
-      character, intent(in) :: uplo, trans
+      character, intent(in) :: uplo, trans, diag
       integer, intent(in) :: m,n,lda
       complex*16, intent(in) :: A_in(lda,n)
       complex*16, intent(in) :: x(*)
@@ -11,7 +11,7 @@
 !     ---------------------------------------
       complex*16 :: A(m,n) 
       integer :: i,j
-      logical :: islower,isupper,isok
+      logical :: islower,isupper,isok,isunitdiag
       logical :: istrans,isconj,isnotrans
       integer :: mm,nn,kk,ld1,ld2,ld3
       complex*16 :: alpha,beta
@@ -30,6 +30,7 @@
       istrans = (trans .eq. 'T').or.(trans .eq. 't')
       isconj  = (trans .eq. 'C').or.(trans .eq. 'c')
       isnotrans = (.not. istrans).and.(.not. isconj)
+      isunitdiag = (diag .eq. 'U') .or. (diag .eq. 'u')
 
 !     -------------------------------
 !     copy A_in(1:m,1:n)  into A(:,:)
@@ -39,12 +40,18 @@
          do j=1,n
          do i=j,m
            A(i,j) = A_in(i,j)
+           if (isunitdiag .and. (i.eq.j)) then
+               A(i,j) = 1
+           endif
          enddo
          enddo
       else
          do j=1,n
          do i=1,min(j,m)
            A(i,j) = A_in(i,j)
+           if (isunitdiag .and. (i.eq.j)) then
+               A(i,j) = 1
+           endif
          enddo
          enddo
       endif
