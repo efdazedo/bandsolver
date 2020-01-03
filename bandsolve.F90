@@ -41,7 +41,6 @@
 ! % -------------------
 
        x(1:n) = b( old2new(1:n) )
-!      x(old2new(1:n)) = b(1:n)
 
       if (idebug >= 2) then
          do j=1,n

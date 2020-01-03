@@ -1,66 +1,15 @@
 #ifndef TRMV_SM_HPP
 #define TRMV_SM_HPP 1
 
-#include <complex>
-#include <cassert>
+#include "common_sm.hpp"
 
-#ifdef USE_GPU
-#define SYNC_THREADS sync_threads()
-#define SHARED _shared_
-#else
-#define SYNC_THREADS
-#define SHARED
-#endif
-
-typedef std::complex<double> zcomplex;
-typedef std::complex<float>  ccomplex;
-
-static inline
-int iceil(int const n, int const nb) {
-	return(  (n + (nb-1))/nb );
-}
-
-static inline
-int max( int const i, int const j) {
-	return(  (i >= j) ? i : j );
-}
-
-static inline
-int min( int const i, int const j) {
-	return( (i <= j) ? i : j );
-}
-
-static inline
-double conj( double x ) {
-	return(x);
-}
-
-static inline
-float conj( float x ) {
-	return(x);
-}
-
-
-static inline
-zcomplex conj( zcomplex x ) {
-        return( std::conj(x) );
-}
-
-static inline
-ccomplex conj( ccomplex x ) {
-        return( std::conj(x)  );
-}
-
-static inline
-int indx2f( int const i, int const j, int const ld) {
-	return(  (i-1) + ((j-1)*ld )  );
-}
 
 //  -----------------------------------------------
 //  Perform   v = op(A) * x,  op(A) is m by n but 
 //  may be a trapezoidal part
 //  -----------------------------------------------
 template<typename T>
+DEVICE_FUNCTION
 void trmv_sm( char const uplo, 
 	      char const trans, 
               char const diag,
@@ -71,6 +20,16 @@ void trmv_sm( char const uplo,
 	      T x_[], 
 	      T v_[])
 {
+#ifdef USE_GPU
+        int const ix_start = threadIdx.x + 
+                             threadIdx.y*blockDim.x + 
+                             threadIdx.z*(blockDim.x*blockDim.y); 
+
+        int const ix_size = blockDim.x*blockDim.y*blockDim.z;
+#else
+        int const ix_start = 1;
+        int const ix_size = 1;
+#endif
 	bool const isupper = (uplo == 'U') || (uplo == 'u');
         bool const islower = (uplo == 'L') || (uplo == 'l');
 	bool const istranspose = (trans == 'T') || (trans == 't');
@@ -86,18 +45,14 @@ void trmv_sm( char const uplo,
 
 	auto A = [&] (int const ia, int const ja) -> T const & {
 
-                assert( (1 <= ia) && (ia <= m) );
-                assert( (1 <= ja) && (ja <= n) );
 		return( A_[indx2f( ia, ja, lda ) ] );
 	};
 
 	auto x = [&] (int const ia) -> T& {
-                assert( (1 <= ia) && (ia <= ncol) );
 		return( x_[ ia-1 ] );
 	};
 
 	auto v = [&] (int const i) -> T& {
-		assert( (1 <= i) && (i <= nrow) );
 		return( v_[ i-1 ] );
 	};
 
@@ -105,7 +60,7 @@ void trmv_sm( char const uplo,
 
         SYNC_THREADS;
 
-        for(int ia=1; ia <= nrow; ia++) {
+        for(int ia=ix_start; ia <= nrow; ia += ix_size) {
            T vi = 0;
            for(int ja=1; ja <= ncol; ja++) {
                 int ii = isnotrans ?  ia : ja;
