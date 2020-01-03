@@ -11,10 +11,10 @@
        complex(kind=wp), allocatable :: A(:,:,:)
        complex(kind=wp), allocatable :: Aorg(:,:,:)
        complex(kind=wp), allocatable :: x(:,:), xnew(:,:),xdiff(:,:) 
-       complex(kind=wp), allocatable :: b(:,:),res(:,:)
+       complex(kind=wp), allocatable :: b(:,:),res(:,:),v(:,:)
        integer, allocatable :: old2new(:,:)
 
-       integer :: ldA,ldB
+       integer :: ldA,ldB,ldX,ldV
        integer :: ibatch, i, info
        logical :: isok
 
@@ -39,8 +39,10 @@
 	 Aorg(:,:,ibatch) = A(:,:,ibatch)
       enddo
 
-      allocate( b(n,batchCount), x(n,batchCount), xnew(n,batchCount) )
-      allocate( xdiff(n,batchCount), res(n,batchCount))
+      ldB = n
+      ldX = n
+      allocate( b(ldB,batchCount), x(ldX,batchCount), xnew(ldX,batchCount) )
+      allocate( xdiff(ldX,batchCount), res(ldB,batchCount))
 
 !$omp parallel do private(ibatch,x_re,x_im,i)
       do ibatch=1,batchCount
@@ -86,14 +88,18 @@
 	  return
 	endif
 
+        ldV = max( maxval(kl_array(1:batchCount)),                        &
+                   maxval(ku_array(1:batchCount)) )
+        allocate( v(ldV,batchCount) )
 
        ldB = size(B,1)
+       ldX = size(X,1)
+       ldV = size(v,1)
        call bandsolve_batched(n, kl_array,ku_array,A,ldA,                &
-     &                  old2new,b,ldB,batchCount)
+     &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
 
-       do ibatch=1,batchCount
-	  xnew(1:n,ibatch) = b(1:n,ibatch)
-       enddo
+       deallocate( v )
+
 
        max_err = 0
        max_res = 0

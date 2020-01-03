@@ -1,10 +1,15 @@
       subroutine Ztrmv_smf(uplo,trans,diag,m,n,A_in,lda,x,v)
+!     ----------------------------------------------
+!     reference implementation for checking and debugging
+!     this is a straight-forward but inefficient implementation
+!     this creates a copy of the matrix to call GEMM
+!     ----------------------------------------------
       implicit none
       character, intent(in) :: uplo, trans, diag
       integer, intent(in) :: m,n,lda
       complex*16, intent(in) :: A_in(lda,n)
       complex*16, intent(in) :: x(*)
-      complex*16, intent(in) :: v(*)
+      complex*16, intent(inout) :: v(*)
 
 !     ---------------------------------------
 !     compute v(:) = op( A(1:m, 1:n) ) * x(:)

@@ -1,4 +1,4 @@
-      subroutine bandsolve( n, kl, ku, A, ldA, old2new, b)
+      subroutine bandsolve( n, kl, ku, A, ldA, old2new, b,x,v)
 !     --------------------------------------------------------------
 !     Note  L, U are stored in  matrix A
 !     diagonal blocks in L and U contain the explicit matrix inverse
@@ -8,7 +8,9 @@
       integer, intent(in) :: n, kl, ku,ldA
       integer, intent(in) :: old2new(*)
       complex(kind=wp), target, intent(in) :: A(lda,*)
-      complex(kind=wp), intent(inout) :: b(*)
+      complex(kind=wp), intent(in) :: b(*)
+      complex(kind=wp), intent(inout) :: x(*)
+      complex(kind=wp), intent(inout) :: v(*)
 
 
 
@@ -16,7 +18,6 @@
       integer, parameter :: idebug = 0
       integer :: istat
       logical :: is_square
-      complex(kind=wp), target  :: x(n), v(max(kl,ku))
       integer :: inc, incx, max_k
       integer :: i1,i2,ib,i,j,k,istart,iend,isize,nn
       character :: uplo, trans, diag
@@ -247,13 +248,6 @@
            print*,'y(',j,') = ',x(j)
           enddo
        endif
-
-!      -------------
-!      copy solution 
-!      -------------
-       do i=1,n
-          b(i) = x(i)
-       enddo
 
 
        return
