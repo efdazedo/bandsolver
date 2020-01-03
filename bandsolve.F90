@@ -51,8 +51,8 @@
 ! % solve L*y = P*b
 ! % --------------
       do istart=1,n,kl
-	 iend = min(n, istart+kl-1)
-	 isize = iend - istart + 1
+         iend = min(n, istart+kl-1)
+         isize = iend - istart + 1
 
 !
 !     % -------------------------------------------------------
@@ -62,11 +62,11 @@
 !     x(istart:iend) =  tril(L( istart:iend, istart:iend) )* x(istart:iend);
 !     ----------------------------------------------------------------------
 
-	uplo = 'Lower'
-	trans = 'NoTrans'
-	diag = 'Unit'
-	nn = isize
-	incx = 1
+        uplo = 'Lower'
+        trans = 'NoTrans'
+        diag = 'Unit'
+        nn = isize
+        incx = 1
         call Ztrmv(uplo,trans,diag,nn,A(istart,istart),ldA,              &
      &             x(istart),incx)
 
@@ -85,11 +85,11 @@
         nn = iend-istart+1
 
         if ((mm >= 1).and.(nn >= 1)) then
-	    uplo = 'Upper'
-	    trans = 'NoTrans'
-	    diag = 'NonUnit'
+            uplo = 'Upper'
+            trans = 'NoTrans'
+            diag = 'NonUnit'
 
-	  is_square  = (nn .eq. mm)
+          is_square  = (nn .eq. mm)
           if (is_square) then
 !        -----------------------------------------------------
 !        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
@@ -103,11 +103,11 @@
 !        -----------------------------------------------------
 !        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
 !        -----------------------------------------------------
-            call Ztrmv_sm(uplo,trans,mm,nn,                             &
+            call Ztrmv_sm(uplo,trans,mm,nn,                              &
      &            A(i1,istart),ldA, x(istart), v)
 
             if (idebug >= 3) then
-             print*,'v(:) = triu(L(i1:i2,istart:iend))' // &
+             print*,'v(:) = triu(L(i1:i2,istart:iend))' //               &
      &               ' *x(istart:iend)'
              print*,'i1,i2,istart,iend ',i1,i2,istart,iend
              do j=istart,iend
@@ -132,7 +132,7 @@
           do i=1,(i2-i1+1)
                x( (i1-1)+i ) = x( (i1-1)+i) - v(i)
           enddo
-	endif
+        endif
        enddo
 
        if (idebug >= 2) then
@@ -187,8 +187,8 @@
        if ((mm >= 1).and.(nn >= 1)) then
          is_square = (mm .eq. nn)
          uplo = 'Lower'
-	 trans = 'NoTrans'
-	 diag = 'NonUnit'
+         trans = 'NoTrans'
+         diag = 'NonUnit'
          if (is_square) then
 !        -----------------------------------------------------------
 !        let   v(:) = tril( U(i1:i2, istart:iend)) * x(istart:iend)
@@ -213,7 +213,7 @@
          do i=1,(i2-i1+1)
               x( (i1-1)+i) = x( (i1-1)+i) - v(i)
          enddo
-	endif
+        endif
        enddo
 
        if (idebug >= 2) then
