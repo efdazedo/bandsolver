@@ -22,6 +22,9 @@
            if (idebug >= 2) then
                aij = -(i + (j-1)*n)
            endif
+
+
+
            if (i - j > kl) then
                aij = 0
            endif
