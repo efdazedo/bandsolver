@@ -2,7 +2,7 @@
       implicit none
       character, intent(in) :: uplo, trans
       integer, intent(in) :: m,n,lda
-      complex*16, intent(in) :: A_in(lda,*)
+      complex*16, intent(in) :: A_in(lda,n)
       complex*16, intent(in) :: x(*)
       complex*16, intent(in) :: v(*)
 
@@ -17,6 +17,8 @@
       complex*16 :: alpha,beta
       character :: transA, transB
 
+      integer, parameter :: idebug = 0
+
       islower = (uplo .eq. 'L').or.(uplo .eq. 'l')
       isupper = (uplo .eq. 'U').or.(uplo .eq. 'u')
       isok = islower .or. isupper
@@ -29,6 +31,9 @@
       isconj  = (trans .eq. 'C').or.(trans .eq. 'c')
       isnotrans = (.not. istrans).and.(.not. isconj)
 
+!     -------------------------------
+!     copy A_in(1:m,1:n)  into A(:,:)
+!     -------------------------------
       A(:,:) = 0
       if (islower) then
          do j=1,n
@@ -57,8 +62,19 @@
 
 
       call Zgemm( transA, transB, mm,nn,kk,                              &
-     &      alpha, A,ld1, x, ld2, &
+     &      alpha, A,ld1, x, ld2,                                        &
      &      beta,  v,ld3 )
+
+      if (idebug >= 1) then
+         print*,'ztrmv_smf: uplo,trans,m,n ',                            &
+     &                      uplo,trans,m,n
+
+         do j=1,n
+         do i=1,m
+           print*,'A(',i,',',j,') = ',A(i,j)
+         enddo
+         enddo
+      endif
 
       return
       end subroutine Ztrmv_smf

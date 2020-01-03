@@ -51,6 +51,11 @@
 	 do i=1,n
 	   x(i,ibatch) = cmplx( x_re(i), x_im(i), kind=wp)
 	 enddo
+         if (idebug >= 1) then
+           do i=1,n
+             x(i,ibatch) = i
+           enddo
+         endif
        enddo
 
 ! % -------------------------

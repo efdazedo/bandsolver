@@ -5,7 +5,7 @@
       integer :: n, kl, ku, batchCount
       real(kind=wp) :: max_err, max_res
 
-      n = 10
+      n = 5
       kl = n-1
       ku = n-1
       batchCount = 1

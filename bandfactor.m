@@ -6,7 +6,7 @@ function [L,U,old2new, kl,ku] = bandfactor( A )
 % to estimate the lower and upper bandwidth in L and U factors
 % ------------------------------------------------------------
 
-idebug = 1;
+idebug = 2;
 
 n = size(A,1);
 is_square = (size(A,1) == size(A,2));
@@ -84,3 +84,25 @@ end;
 % ---------------------------
 ip = reshape( 1:n, n,1);
 old2new(1:n) = P*ip(1:n);
+
+if (idebug >= 2),
+   for j=1:n,
+   for i=(j+1):n,
+     disp(sprintf('L(%d,%d) = %e', ...
+                     i, j,    L(i,j) ));
+   end;
+   end;
+
+   for j=1:n,
+   for i=1:j,
+     disp(sprintf('U(%d,%d) = %e ', ...
+                     i,  j,   U(i,j) ));
+   end;
+   end;
+
+   for j=1:n,
+     disp(sprintf('old2new(%d) = %d', ...
+                            j,  old2new(j) ));
+   end;
+
+end;

@@ -4,7 +4,12 @@ function [A] = gen_banded(n,kl,ku)
 % generate banded matrix of size n by n
 % with lower bandwidth kl and upper bandwidth ku
 % ----------------------
+idebug = 2;
 A = rand(n,n)*2-1;
+if (idebug >= 2),
+    A = -reshape( 1:(n*n), n,n);
+end;
+
 for j=1:n,
 for i=1:n,
   if (i-j > kl),
@@ -14,4 +19,11 @@ for i=1:n,
     A(i,j) = 0;
   end;
 end;
+end;
+
+if (idebug >= 1),
+   for j=1:n,
+       i = j;
+       A(i,i) = max( 10^4, 2*n*n);
+   end;
 end;

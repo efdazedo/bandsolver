@@ -7,7 +7,7 @@ function [ x ] = bandsolve( n,kl,ku, L,U,old2new,  b )
 % diagonal blocks of L has explicit inverse
 % diagonal blocks of U has explicit inverse
 % -------------------------------
-idebug = 2;
+idebug = 3;
 
 n = size(L,1);
 x = zeros(n,1);
@@ -62,6 +62,14 @@ end;
 % -------------------
 x(1:n) = b(old2new(1:n));
 
+if (idebug >= 2),
+    disp('before L*y = P*b');
+    for j=1:n,
+       disp(sprintf('Pb(%d) = %e', ...
+                        j,    x(j) ));
+    end;
+end;
+
 % --------------
 % solve L*y = P*b
 % --------------
@@ -79,15 +87,49 @@ for istart=1:kl:n,
       % -------------------------------------------------------
       % Compute using  DTRMV  triangular matrix-vector multiply
       % -------------------------------------------------------
-      x( i1:i2) = x(i1:i2) - triu(L( i1:i2, istart:iend)) * x(istart:iend);
+      v = triu(L( i1:i2, istart:iend)) * x(istart:iend);
+      x( i1:i2) = x(i1:i2) - v( 1:(i2-i1+1) );
       is_square = (i2-i1+1) == (iend-istart+1);
       if (!is_square),
         disp(sprintf('non-square DTRMV: i1=%d, i2=%d, istart=%d, iend=%d', ...
 		                        i1,    i2,    istart,    iend ));
       end;
+
+
+      if (idebug >= 3),
+         disp('v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend)');
+         disp(sprintf('i1=%d,i2=%d,istart=%d,iend=%d',  ...
+                       i1,   i2,   istart,   iend ));
+
+         for j=istart:iend
+           disp(sprintf('x(%d) = %g ', ...
+                            j,   x(j) ) );
+         end;
+
+         for j=1:(i2-i1+1),
+           disp(sprintf('v(%d) = %g', ...
+                           j,    v(j) ));
+         end;
+
+         for j=istart:iend,
+         for i=i1:i2,
+           disp(sprintf('L(%d,%d) = %g ', ...
+                           i,  j,   L(i,j) ));
+         end;
+         end;
+      end;
+
+    end;
+end; % end for istart
+
+if (idebug >= 2),
+    disp('after L*y = P*b')
+    for j=1:n,
+      disp(sprintf('x(%d) = %e', ...
+                       j,   x(j) ));
     end;
 end;
-
+     
 
 % -------------
 % solve y = U*x
@@ -118,3 +160,14 @@ for k=max_k:-1:1,
        end;
     end;
 end;
+
+if (idebug >= 2),
+        disp('after y = U*x ');
+        for j=1:n,
+          disp(sprintf('y(%d) = %e', ...
+                          j,  x(j) ));
+        end;
+end;
+
+
+

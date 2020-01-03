@@ -1,7 +1,7 @@
       subroutine bandfactor( n, A, lda, old2new, kl, ku, info )
       implicit none
 
-      integer, parameter :: idebug = 1
+      integer, parameter :: idebug = 2
 
       integer, intent(in) :: n, lda
       integer, intent(inout) :: old2new(*)
@@ -177,6 +177,24 @@
 	       old2new(j) = itemp
 	 endif
        enddo
+
+       if (idebug >= 2) then
+          do j=1,n
+          do i=(j+1),n
+           print *,'L(',i,',',j,') = ', A(i,j)
+          enddo
+          enddo
+
+          do j=1,n
+          do i=1,j
+           print *,'U(',i,',',j,') = ',A(i,j)
+          enddo
+          enddo
+
+          do j=1,n
+            print*,'old2new(',j,') = ',old2new(j)
+          enddo
+       endif
 
        return
        end subroutine bandfactor

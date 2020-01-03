@@ -11,6 +11,9 @@ A = gen_banded(n,kl,ku);
 % generate solution and rhs
 % -------------------------
 x = 2*rand(n,1)-1;
+if (idebug >= 1),
+   x = reshape(1:n,n,1);
+end;
 b = A * x;
 
 % ---------------------

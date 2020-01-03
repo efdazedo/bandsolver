@@ -19,6 +19,9 @@
 	 x_im(1:n) = 2*x_im(1:n) - 1
 	 do i=1,n
 	   aij = cmplx( x_re(i), x_im(i), kind=wp)
+           if (idebug >= 2) then
+               aij = -(i + (j-1)*n)
+           endif
            if (i - j > kl) then
 	       aij = 0
 	   endif

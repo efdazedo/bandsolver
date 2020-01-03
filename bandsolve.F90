@@ -12,7 +12,7 @@
 
 
 
-      integer, parameter :: idebug = 1
+      integer, parameter :: idebug = 3
       integer :: istat
       logical :: is_square
       complex(kind=wp), target  :: x(n), v(max(kl,ku))
@@ -41,6 +41,11 @@
        x(1:n) = b( old2new(1:n) )
 !      x(old2new(1:n)) = b(1:n)
 
+      if (idebug >= 2) then
+         do j=1,n
+           print*,'Pb(',j,') = ', x(j)
+         enddo
+      endif
 
 ! % --------------
 ! % solve L*y = P*b
@@ -80,12 +85,12 @@
         nn = iend-istart+1
 
         if ((mm >= 1).and.(nn >= 1)) then
-
-	  is_square  = (nn .eq. mm)
-          if (is_square) then
 	    uplo = 'Upper'
 	    trans = 'NoTrans'
 	    diag = 'NonUnit'
+
+	  is_square  = (nn .eq. mm)
+          if (is_square) then
 !        -----------------------------------------------------
 !        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
 !        -----------------------------------------------------
@@ -100,6 +105,25 @@
 !        -----------------------------------------------------
             call Ztrmv_smf(uplo,trans,mm,nn,                         &
      &            A(i1,istart),ldA, x(istart), v)
+
+            if (idebug >= 3) then
+             print*,'v(:) = triu(L(i1:i2,istart:iend))' // &
+     &               ' *x(istart:iend)'
+             print*,'i1,i2,istart,iend ',i1,i2,istart,iend
+             do j=istart,iend
+               print*,'x(',j,') = ', x(j)
+             enddo
+             do j=1,(i2-i1+1)
+               print*,'v(',j,') = ',v(j)
+             enddo
+
+             do j=istart,iend
+             do i=i1,i2
+               print*,'L(',i,',',j,') = ', A(i,j)
+             enddo
+             enddo
+            endif
+
           endif
 
 !        ---------------------------
@@ -110,6 +134,13 @@
           enddo
 	endif
        enddo
+
+       if (idebug >= 2) then
+          print*,'after solving L*x = P*b'
+          do j=1,n
+            print*,'x(',j,') = ', x(j)
+          enddo
+       endif
 !
 ! % -------------
 ! % solve y = U*x
@@ -173,6 +204,7 @@
 !        -----------------------------------------------------------
            call Ztrmv_smf(uplo,trans,mm,nn,                               &
      &             A(i1,istart),ldA,x(istart),v)
+
          endif
 
 !              --------------------------
@@ -183,6 +215,13 @@
          enddo
 	endif
        enddo
+
+       if (idebug >= 2) then
+          print*,'after solving U*y = x '
+          do j=1,n
+           print*,'y(',j,') = ',x(j)
+          enddo
+       endif
 
 !      -------------
 !      copy solution 
