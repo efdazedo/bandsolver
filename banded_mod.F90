@@ -146,8 +146,20 @@
          character(kind=c_char), value :: uplo,transA,diag
          integer(kind=c_int), value :: m,n,ldA
          complex(kind=c_float_complex) :: A(*), x(*),v(*)
-!         type(c_ptr), value :: A, x, v
          end subroutine Ctrmv_sm
+      end interface
+
+      interface
+        subroutine bandsolve_batched_sm( n, kl_array, ku_array,          &
+     &     A, ldA, old2new, b, ldB, x, ldX, v, ldV, batchCount)          &
+     &     bind(C,name='bandsolve_batched_sm')
+        use iso_c_binding
+        implicit none
+        integer(kind=c_int),value:: n, ldA, ldB, ldX, ldV, batchCount
+        complex(kind=c_double_complex) :: A(*), b(*), x(*), v(*)
+        integer(kind=c_int) :: kl_array(*), ku_array(*)
+        integer(kind=c_int) :: old2new(*)
+        end subroutine bandsolve_batched_sm
       end interface
 
       contains

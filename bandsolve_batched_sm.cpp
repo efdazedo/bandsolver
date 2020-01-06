@@ -2,6 +2,7 @@
 
 extern "C" {
 
+
 void bandsolve_batched_sm( int const n,
                            int const kl_array_[],
                            int const ku_array_[],
@@ -17,11 +18,14 @@ void bandsolve_batched_sm( int const n,
                            int const batchCount) 
 {
 
-
 #ifdef USE_GPU
+
    int constexpr warpsize = 32;
-   int constexpr nwarps = 8;
-   int constexpr nthreads = nwarps * warpsize;
+   int constexpr max_nthreads = 1024;
+   int const max_klku = ldV;
+   int const nwarps = iceil( max_klku, warpsize);
+   int const nthreads = max(1, min(max_nthreads,nwarps * warpsize));
+
    bandsolve_batched_sm<zcomplex><<<batchCount,nthreads>>>(
                            n, kl_array_, ku_array_,
                            A_, ldA,
@@ -44,6 +48,10 @@ void bandsolve_batched_sm( int const n,
 
 #endif
 };
+
+
+
+
 
 
 }

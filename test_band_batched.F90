@@ -95,7 +95,7 @@
        ldB = size(B,1)
        ldX = size(X,1)
        ldV = size(v,1)
-       call bandsolve_batched(n, kl_array,ku_array,A,ldA,                &
+       call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
      &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
 
        deallocate( v )
