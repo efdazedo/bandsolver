@@ -24,6 +24,9 @@
        integer :: ku_array(batchCount)
        integer :: info_array(batchCount)
 
+       integer :: t1,t2,count_rate
+       real(kind=wp) :: elapsed_time
+
        real(kind=wp) :: huge = 1.0d9
 
        max_err = huge
@@ -75,8 +78,13 @@
 ! % kl2 ~ 2*(kl+ku), ku2 ~ 2*ku
 ! % ---------------------
 
+       call system_clock(t1,count_rate)
        call bandfactor_batched(n,A,lda,old2new,kl_array,ku_array,           &
      &              info_array, batchCount)
+       call system_clock(t2,count_rate)
+       elapsed_time = dble(t2-t1)/dble(count_rate)
+       print*,'bandfactor_batched took ',elapsed_time,'sec'
+
        isok = all( info_array(1:batchCount).eq.0 )
        if (.not.isok) then
 	  do ibatch=1,batchCount
@@ -95,8 +103,13 @@
        ldB = size(B,1)
        ldX = size(X,1)
        ldV = size(v,1)
+
+       call system_clock(t1,count_rate)
        call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
      &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
+       call system_clock(t2,count_rate)
+       elapsed_time = dble(t2-t1)/dble(count_rate)
+       print*,'bandsolve_batched_sm took ', elapsed_time,'sec'
 
        deallocate( v )
 

@@ -65,8 +65,8 @@ void bandsolve_batched_sm( int const n,
 #else
         int const iz_start = 1;
         int const iz_size = 1;
+        #pragma omp parallel for
 #endif
-
         for(int ibatch=iz_start; ibatch <= batchCount; ibatch += iz_size) {
                 int const kl = kl_array(ibatch);
                 int const ku = ku_array(ibatch);

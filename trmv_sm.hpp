@@ -56,27 +56,67 @@ void trmv_sm( char const uplo,
 		return( v_[ i-1 ] );
 	};
 
+
 	
 
         SYNC_THREADS;
 
-        for(int ia=ix_start; ia <= nrow; ia += ix_size) {
-           T vi = 0;
-           for(int ja=1; ja <= ncol; ja++) {
-                int ii = isnotrans ?  ia : ja;
-                int jj = isnotrans ?  ja : ia;
+        // ------------------------------------------------
+        // check for special cases for further optimization
+        // ------------------------------------------------
+        bool const  is_triangular = (m == n);
+        if (is_triangular && isnotrans) {
+          for(int ia=ix_start; ia <= nrow; ia += ix_size) {
+             T vi = 0;
+             {
+             // diagonal entry
+             int const ja = ia;
+             T const aij = isunitdiag ? 1 : A(ia,ja);
+             T const xj = x(ja);
+             vi += aij * xj;
+             }
 
-                T const xj = x(ja);
-                T aij = (islower && (ii >= jj)) ||
-                        (isupper && (ii <= jj)) ? A(ii,jj) : 0;
 
-                aij = (isunitdiag && (ii == jj)) ? 1 : aij;
-                aij = (isconj) ? conj(aij) : aij;
+             int const jastart = (islower) ? 1      : (ia+1);
+             int const jaend   = (islower) ? (ia-1) : ncol;
+             for(int ja=jastart; ja <= jaend; ja++) {
+                      T const aij = A(ia,ja);
+                      T const xj = x(ja);
+                      vi += aij * xj;
+                 };
+             v(ia) = vi;
 
-                vi += aij * xj;
-           };
-           v(ia) = vi;
+          }; // end for ia
+
+
+        }
+        else {
+
+           // -------------------
+           // handle general case
+           // -------------------
+
+          for(int ia=ix_start; ia <= nrow; ia += ix_size) {
+             T vi = 0;
+             for(int ja=1; ja <= ncol; ja++) {
+                  int ii = isnotrans ?  ia : ja;
+                  int jj = isnotrans ?  ja : ia;
+  
+                  T const xj = x(ja);
+                  T aij = (islower && (ii >= jj)) ||
+                          (isupper && (ii <= jj)) ? A(ii,jj) : 0;
+  
+                  aij = (isunitdiag && (ii == jj)) ? 1 : aij;
+                  aij = (isconj) ? conj(aij) : aij;
+  
+                  vi += aij * xj;
+             };
+             v(ia) = vi;
+          };
+
         };
+
+
 
         SYNC_THREADS;
 
