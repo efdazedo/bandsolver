@@ -32,23 +32,23 @@ void bandsolve_sm( int const n,
         int const ix_start = 1;
         int const ix_size = 1;
 #endif
-        auto x = [&] (int const i) -> T& {
+        inline auto x = [&] (int const i) -> T& {
                 return( x_[ (i)-1 ] );
         };
 
-        auto A = [&] (int const ia, int const ja) -> T const & {
+        inline auto A = [&] (int const ia, int const ja) -> T const & {
                 return( A_[indx2f(ia,ja,ldA)] );
         };
 
-        auto v = [&] (int const i) -> T& {
+        inline auto v = [&] (int const i) -> T& {
                 return( v_[ (i)-1 ] );
         };
 
-        auto old2new = [&] (int const i) -> int const & {
+        inline auto old2new = [&] (int const i) -> int const & {
                 return( old2new_[ (i)-1 ] );
         };
 
-        auto b = [&] (int const i) -> T const & {
+        inline auto b = [&] (int const i) -> T const & {
                 return( b_[ (i)-1 ] );
         };
  

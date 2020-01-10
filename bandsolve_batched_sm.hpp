@@ -25,33 +25,33 @@ void bandsolve_batched_sm( int const n,
          * use 1-based indexing to match Fortran and matlab code
          * -----------------------------------------------------
          */
-        auto v = [&] (int const i, int const ibatch) -> T& {
+        inline auto v = [&] (int const i, int const ibatch) -> T& {
                 return( v_[indx2f(i,ibatch,ldV)] );
         };
 
-        auto x = [&] (int const i, int const ibatch) -> T& {
+        inline auto x = [&] (int const i, int const ibatch) -> T& {
                 return( x_[indx2f(i,ibatch,ldX)] );
         };
 
-        auto old2new = [&] (int const i, int const ibatch) -> int const & {
+        inline auto old2new = [&] (int const i, int const ibatch) -> int const & {
                 return( old2new_[indx2f(i,ibatch,n)] );
         };
 
-        auto b = [&] (int const i, int const ibatch) -> T const & {
+        inline auto b = [&] (int const i, int const ibatch) -> T const & {
                 return( b_[indx2f(i,ibatch,ldB)] );
         };
 
-        auto A = [&] (int const i, int const j, int const ibatch) -> T const & {
+        inline auto A = [&] (int const i, int const j, int const ibatch) -> T const & {
                 return( A_[ indx3f(i,j,ibatch,ldA,n) ] );
         };
 
 
 
-        auto kl_array = [&] (int const ibatch) -> int const & {
+        inline auto kl_array = [&] (int const ibatch) -> int const & {
                 return( kl_array_[ ibatch-1 ] );
         };
 
-        auto ku_array = [&] (int const ibatch) -> int const & {
+        inline auto ku_array = [&] (int const ibatch) -> int const & {
                 return( ku_array_[ ibatch-1 ] );
         };
 
