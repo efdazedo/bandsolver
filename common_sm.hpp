@@ -22,6 +22,7 @@
 typedef cuDoubleComplex zcomplex;
 typedef cuFloatComplex  ccomplex;
 
+
 #else
 
 #define GLOBAL_FUNCTION
@@ -34,6 +35,7 @@ typedef std::complex<double> zcomplex;
 typedef std::complex<float>  ccomplex;
 
 #endif
+
 
 
 
@@ -86,6 +88,8 @@ double conj( double x ) {
 	return(x);
 }
 
+
+
 static inline
 HOST_FUNCTION DEVICE_FUNCTION
 float conj( float x ) {
@@ -96,14 +100,83 @@ float conj( float x ) {
 static inline
 HOST_FUNCTION DEVICE_FUNCTION
 zcomplex conj( zcomplex x ) {
-        return( std::conj(x) );
+#ifdef USE_GPU
+        return( cuConj(x) );
+#else
+        return( std::conj( x ) );
+#endif
 }
+
 
 static inline
 HOST_FUNCTION DEVICE_FUNCTION
 ccomplex conj( ccomplex x ) {
-        return( std::conj(x)  );
+#ifdef USE_GPU
+        return(  cuConjf(x) );
+#else
+        return( std::conj(x) );
+#endif
 }
+
+
+//  -----------------
+//  code for make_val
+//  -----------------
+
+template<typename T>
+inline
+HOST_FUNCTION DEVICE_FUNCTION
+T make_val( double x ) {
+	return(x);
+}
+
+
+#ifdef USE_GPU
+
+template<>
+HOST_FUNCTION DEVICE_FUNCTION
+zcomplex make_val<zcomplex>( double x_re ) {
+        return( make_cuDoubleComplex(x_re, 0.0) );
+}
+
+template<>
+HOST_FUNCTION DEVICE_FUNCTION
+ccomplex make_val<ccomplex>( double x_re ) {
+        return(  make_cuFloatComplex(x_re,0.0) );
+}
+
+#endif
+
+
+// ------------
+// code for fma
+// ------------
+
+template<typename T>
+inline
+HOST_FUNCTION DEVICE_FUNCTION
+void fma( T& c, T const & a, T const & b ) {
+	c += a*b;
+}
+
+#ifdef USE_GPU
+
+template<>
+void fma<ccomplex>( ccomplex& c, 
+                    ccomplex const & a, ccomplex const & b )  {
+        c = cuCaddf( c, cuCmulf(a,b) );
+}
+
+template<>
+void fma<zcomplex>( zcomplex& c, 
+                    zcomplex const & a, zcomplex const & b )  {
+        c = cuCadd( c, cuCmul(a,b) );
+}
+
+#endif
+
+
+
 
 
 #endif

@@ -140,8 +140,11 @@ void bandsolve_sm( int const n,
 
            SYNC_THREADS;
 
+           T const neg_one_T = make_val<T>(-1.0);
+
            for(int i=ix_start; i <= mm; i += ix_size) {
-                x( (i1-1)+i) = x( (i1-1)+i) - v(i);
+                // x( (i1-1)+i) = x( (i1-1)+i) - v(i);
+                fma<T>(x( (i1-1)+i), neg_one_T, v(i) );
            };
 
            SYNC_THREADS;
@@ -218,8 +221,11 @@ void bandsolve_sm( int const n,
 !              x(i1:i2) = x(i1:i2) - v(:)
 !              --------------------------
 */
+        T const neg_one_T = make_val<T>(-1.0);
+
         for(int i=ix_start; i <= (i2-i1+1); i += ix_size) {
-                x( (i1-1)+i) = x( (i1-1)+i) - v(i);
+                // x( (i1-1)+i) = x( (i1-1)+i) - v(i);
+                fma<T>( x( (i1-1)+i), neg_one_T, v(i) );
         };
 
         SYNC_THREADS;

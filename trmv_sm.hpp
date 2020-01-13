@@ -57,6 +57,8 @@ void trmv_sm( char const uplo,
 	};
 
 
+         T const one_T = make_val<T>(1.0);
+         T const zero_T = make_val<T>(0.0);
 	
 
         SYNC_THREADS;
@@ -67,13 +69,14 @@ void trmv_sm( char const uplo,
         bool const  is_triangular = (m == n);
         if (is_triangular && isnotrans) {
           for(int ia=ix_start; ia <= nrow; ia += ix_size) {
-             T vi = 0;
+             T vi = zero_T;
              {
              // diagonal entry
              int const ja = ia;
-             T const aij = isunitdiag ? 1 : A(ia,ja);
+             T const aij = isunitdiag ? one_T : A(ia,ja);
              T const xj = x(ja);
-             vi += aij * xj;
+             // vi += aij * xj;
+             fma<T>(vi,aij,xj);
              }
 
 
@@ -82,7 +85,8 @@ void trmv_sm( char const uplo,
              for(int ja=jastart; ja <= jaend; ja++) {
                       T const aij = A(ia,ja);
                       T const xj = x(ja);
-                      vi += aij * xj;
+                      // vi += aij * xj;
+                      fma<T>(vi,aij,xj);
                  };
              v(ia) = vi;
 
@@ -97,19 +101,20 @@ void trmv_sm( char const uplo,
            // -------------------
 
           for(int ia=ix_start; ia <= nrow; ia += ix_size) {
-             T vi = 0;
+             T vi = zero_T;
              for(int ja=1; ja <= ncol; ja++) {
                   int ii = isnotrans ?  ia : ja;
                   int jj = isnotrans ?  ja : ia;
   
                   T const xj = x(ja);
                   T aij = (islower && (ii >= jj)) ||
-                          (isupper && (ii <= jj)) ? A(ii,jj) : 0;
+                          (isupper && (ii <= jj)) ? A(ii,jj) : zero_T;
   
-                  aij = (isunitdiag && (ii == jj)) ? 1 : aij;
+                  aij = (isunitdiag && (ii == jj)) ? one_T : aij;
                   aij = (isconj) ? conj(aij) : aij;
   
-                  vi += aij * xj;
+                  // vi += aij * xj;
+                  fma<T>(vi,aij,xj);
              };
              v(ia) = vi;
           };
