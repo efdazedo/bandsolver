@@ -43,16 +43,16 @@ void trmv_sm( char const uplo,
         int const nrow = (isnotrans) ? m : n;
         int const ncol = (isnotrans) ? n : m;
 
-	inline auto A = [&] (int const ia, int const ja) -> T const & {
+	 auto A = [&] (int const ia, int const ja) -> T const & {
 
 		return( A_[indx2f( ia, ja, lda ) ] );
 	};
 
-	inline auto x = [&] (int const ia) -> T& {
+	 auto x = [&] (int const ia) -> T& {
 		return( x_[ ia-1 ] );
 	};
 
-	inline auto v = [&] (int const i) -> T& {
+	 auto v = [&] (int const i) -> T& {
 		return( v_[ i-1 ] );
 	};
 
