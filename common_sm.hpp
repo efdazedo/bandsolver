@@ -9,6 +9,7 @@
 #include <cmath>
 
 #ifdef USE_GPU
+#include <thrust/complex.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuComplex.h>
@@ -19,8 +20,8 @@
 #define DEVICE_FUNCTION __device__
 #define HOST_FUNCTION __host__
 
-typedef cuDoubleComplex zcomplex;
-typedef cuFloatComplex  ccomplex;
+typedef thrust::complex<double> zcomplex;
+typedef thrust::complex<float>  ccomplex;
 
 
 #else
@@ -70,17 +71,21 @@ int iceil(int const n, int const nb) {
 	return(  (n + (nb-1))/nb );
 }
 
-static inline
+template<typename T>
+inline
 HOST_FUNCTION DEVICE_FUNCTION
-int max( int const i, int const j) {
-	return(  (i >= j) ? i : j );
+T min( T const i, T const j) {
+        return( (i <= j) ? i : j );
 }
 
-static inline
+template<typename T>
+inline
 HOST_FUNCTION DEVICE_FUNCTION
-int min( int const i, int const j) {
-	return( (i <= j) ? i : j );
+T max( T const i, T const j) {
+        return( (i >= j) ? i : j );
 }
+
+
 
 static inline
 HOST_FUNCTION DEVICE_FUNCTION
@@ -101,7 +106,7 @@ static inline
 HOST_FUNCTION DEVICE_FUNCTION
 zcomplex conj( zcomplex x ) {
 #ifdef USE_GPU
-        return( cuConj(x) );
+        return( thrust::conj(x) );
 #else
         return( std::conj( x ) );
 #endif
@@ -112,7 +117,7 @@ static inline
 HOST_FUNCTION DEVICE_FUNCTION
 ccomplex conj( ccomplex x ) {
 #ifdef USE_GPU
-        return(  cuConjf(x) );
+        return(  thrust::conj(x) );
 #else
         return( std::conj(x) );
 #endif
@@ -131,7 +136,7 @@ T make_val( double x ) {
 }
 
 
-#ifdef USE_GPU
+#ifdef USE_CUCOMPLEX
 
 template<>
 HOST_FUNCTION DEVICE_FUNCTION
@@ -159,12 +164,13 @@ void fma( T& c, T const & a, T const & b ) {
 	c += a*b;
 }
 
-#ifdef USE_GPU
+#ifdef USE_CUCOMPLEX
 
 template<>
 void fma<ccomplex>( ccomplex& c, 
                     ccomplex const & a, ccomplex const & b )  {
-        c = cuCaddf( c, cuCmulf(a,b) );
+         c = cuCaddf( c, cuCmulf(a,b) );
+        
 }
 
 template<>

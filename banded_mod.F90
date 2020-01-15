@@ -6,6 +6,41 @@
       integer, parameter :: wp = dp
 
       interface
+        function dmalloc( nbytes )                                       &
+     &      bind(c,name='dmalloc') result(ptr)
+        use iso_c_binding
+        implicit none
+        integer(kind=c_size_t), value :: nbytes
+        type(c_ptr) :: ptr
+        end function dmalloc
+
+        subroutine dfree( ptr ) bind(c,name='dfree')
+        use iso_c_binding
+        implicit none
+        type(c_ptr), value :: ptr
+        end subroutine dfree
+
+        subroutine host2acc( dest, src, nbytes )                         &
+     &       bind(c,name='host2acc')
+        use iso_c_binding
+        implicit none
+        type(c_ptr), value :: dest, src 
+        integer(kind=c_size_t), value :: nbytes
+        end subroutine host2acc
+
+
+        subroutine acc2host( dest, src, nbytes )                         &
+     &       bind(c,name='acc2host')
+        use iso_c_binding
+        implicit none
+        type(c_ptr), value :: dest, src 
+        integer(kind=c_size_t), value :: nbytes
+        end subroutine acc2host
+
+
+      end interface
+
+      interface
        subroutine Zgemm(transA,transB,m,n,k,                             &
      &   alpha, A,lda, B,ldb, beta, C, ldc )
        implicit none
@@ -125,6 +160,7 @@
         end subroutine Strmv
       end interface
 
+#ifndef USE_GPU
       interface
          subroutine Ztrmv_sm( uplo,transA,diag,                          &
      &      m,n,A,ldA,x,v) bind(C,name='ztrmv_sm')
@@ -148,8 +184,22 @@
          complex(kind=c_float_complex) :: A(*), x(*),v(*)
          end subroutine Ctrmv_sm
       end interface
+#endif
 
       interface
+#ifdef USE_GPU
+        subroutine bandsolve_batched_sm( n, kl_array, ku_array,          &
+     &     A, ldA, old2new, b, ldB, x, ldX, v, ldV, batchCount)          &
+     &     bind(C,name='bandsolve_batched_sm')
+        use iso_c_binding
+        implicit none
+        integer(kind=c_int),value:: n, ldA, ldB, ldX, ldV, batchCount
+        !complex(kind=c_double_complex) :: A(*), b(*), x(*), v(*)
+        !integer(kind=c_int) :: kl_array(*), ku_array(*)
+        !integer(kind=c_int) :: old2new(*)
+        type(c_ptr), value :: A, b, x, v, kl_array, ku_array,old2new
+        end subroutine bandsolve_batched_sm
+#else
         subroutine bandsolve_batched_sm( n, kl_array, ku_array,          &
      &     A, ldA, old2new, b, ldB, x, ldX, v, ldV, batchCount)          &
      &     bind(C,name='bandsolve_batched_sm')
@@ -160,6 +210,7 @@
         integer(kind=c_int) :: kl_array(*), ku_array(*)
         integer(kind=c_int) :: old2new(*)
         end subroutine bandsolve_batched_sm
+#endif
       end interface
 
       contains
@@ -167,12 +218,14 @@
 #include "gen_banded_batched.F90"
 
 #include "bandfactor.F90"
-#include "bandsolve.F90"
-
-#include "ztrmv_smf.F90"
-
 #include "bandfactor_batched.F90"
+
+
+#ifndef USE_GPU
+#include "ztrmv_smf.F90"
+#include "bandsolve.F90"
 #include "bandsolve_batched.F90"
+#endif
 
 #include "test_band_batched.F90"
 

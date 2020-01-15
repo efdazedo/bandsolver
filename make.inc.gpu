@@ -1,0 +1,16 @@
+FC=gfortran
+CXX=nvcc -x cu
+FFLAGS=-g -fopenmp -DUSE_GPU
+
+CUDADIR=/usr/local/cuda-10.1
+
+CXXFLAGS=\
+        -DUSE_GPU \
+        -g -Xcompiler -fopenmp   -std=c++11 
+
+
+
+# -O2 -Munroll=c:1 -Mlre -Mautoinline -Mvect=simd -Mcache_align   
+
+# CXXFLAGS=-g     -mp   -std=c++11 -Minfo=all
+LIBS= -llapack -lblas  -L$(CUDADIR)/lib64 -lcuda  -lcudart -lstdc++

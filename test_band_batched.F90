@@ -3,16 +3,17 @@
 ! % ---------------------------------------------
 ! % simple test for bandfactor() and bandsolver()
 ! % ---------------------------------------------
+      use iso_c_binding
       implicit none
       integer, intent(in) :: n, kl, ku, batchCount
       real(kind=wp) :: max_err, max_res
 
        integer, parameter :: idebug = 1
-       complex(kind=wp), allocatable :: A(:,:,:)
-       complex(kind=wp), allocatable :: Aorg(:,:,:)
-       complex(kind=wp), allocatable :: x(:,:), xnew(:,:),xdiff(:,:) 
-       complex(kind=wp), allocatable :: b(:,:),res(:,:),v(:,:)
-       integer, allocatable :: old2new(:,:)
+       complex(kind=wp), pointer :: A(:,:,:)
+       complex(kind=wp), pointer :: Aorg(:,:,:)
+       complex(kind=wp), pointer :: x(:,:), xnew(:,:),xdiff(:,:) 
+       complex(kind=wp), pointer :: b(:,:),res(:,:),v(:,:)
+       integer, pointer :: old2new(:,:)
 
        integer :: ldA,ldB,ldX,ldV
        integer :: ibatch, i, info
@@ -20,14 +21,27 @@
 
        real(kind=wp) :: err 
        real(kind=wp) :: x_re(n), x_im(n)
-       integer :: kl_array(batchCount)
-       integer :: ku_array(batchCount)
+       integer, target :: kl_array(batchCount)
+       integer, target :: ku_array(batchCount)
        integer :: info_array(batchCount)
 
        integer :: t1,t2,count_rate
        real(kind=wp) :: elapsed_time
 
        real(kind=wp) :: huge = 1.0d9
+
+       complex(kind=wp), parameter :: one_z = dcmplx(1.0d0,0.0d0)
+       real(kind=wp), parameter :: one_d = real(1.0d0,kind=wp)
+       integer, parameter :: one_i = 1
+
+       integer, parameter :: sizeof_real = c_sizeof(one_d)
+       integer, parameter :: sizeof_complex = c_sizeof(one_z)
+       integer, parameter :: sizeof_int = c_sizeof(one_i)
+
+       integer(kind=c_size_t) :: nbytes
+       type(c_ptr) :: d_v
+       type(c_ptr) :: d_old2new, d_kl_array, d_ku_array
+       type(c_ptr) :: d_A, d_B, d_xnew
 
        max_err = huge
        max_res = huge
@@ -103,16 +117,80 @@
        ldB = size(B,1)
        ldX = size(X,1)
        ldV = size(v,1)
+#ifdef USE_GPU
+!      -------------------------------
+!      allocate storage on accelerator
+!      -------------------------------
+       nbytes = sizeof_complex
+       nbytes = nbytes * size(v)
+       d_v = dmalloc( nbytes )
+
+
+       nbytes = sizeof_complex
+       nbytes = nbytes * size(B)
+       d_B = dmalloc( nbytes )
+       call host2acc( d_B, c_loc(B), nbytes )
+
+       nbytes = sizeof_complex
+       nbytes = nbytes * size(A)
+       d_A = dmalloc( nbytes )
+       call host2acc( d_A, c_loc(A), nbytes )
+
+       nbytes = sizeof_complex
+       nbytes = nbytes * size(xnew)
+       d_xnew = dmalloc( nbytes )
+       call host2acc( d_xnew, c_loc(xnew), nbytes )
+
+       nbytes = sizeof_int
+       nbytes = nbytes * size(old2new)
+       d_old2new = dmalloc( nbytes )
+       call host2acc( d_old2new, c_loc(old2new), nbytes )
+
+       nbytes = sizeof_int
+       nbytes = nbytes * sizeof(kl_array)
+       d_kl_array = dmalloc( nbytes )
+       call host2acc( d_kl_array, c_loc(kl_array), nbytes )
+
+       nbytes = sizeof_int
+       nbytes = nbytes * sizeof(ku_array)
+       d_ku_array = dmalloc( nbytes )
+       call host2acc( d_ku_array, c_loc(ku_array), nbytes )
+#endif
+
+
+
 
        call system_clock(t1,count_rate)
+#ifdef USE_GPU
+       call bandsolve_batched_sm(n, d_kl_array,d_ku_array,d_A,ldA,          &
+     &                  d_old2new,d_B,ldB,d_xnew,ldX,d_v,ldV,batchCount)
+#else
        call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
      &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
+#endif
        call system_clock(t2,count_rate)
        elapsed_time = dble(t2-t1)/dble(count_rate)
        print*,'bandsolve_batched_sm took ', elapsed_time,'sec'
 
+
+       nbytes = sizeof_complex
+       nbytes = nbytes * size(xnew)
+       call acc2host( c_loc(xnew), d_xnew, nbytes )
+
        deallocate( v )
 
+!      ---------------------------------
+!      deallocate storage on accelerator
+!      ---------------------------------
+
+
+       call dfree( d_v )
+       call dfree( d_old2new )
+       call dfree( d_kl_array )
+       call dfree( d_ku_array )
+       call dfree( d_A )
+       call dfree( d_B )
+       call dfree( d_xnew )
 
        max_err = 0
        max_res = 0
