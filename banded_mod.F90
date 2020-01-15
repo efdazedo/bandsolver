@@ -187,7 +187,7 @@
 #endif
 
       interface
-#ifdef USE_GPU
+
         subroutine bandsolve_batched_sm( n, kl_array, ku_array,          &
      &     A, ldA, old2new, b, ldB, x, ldX, v, ldV, batchCount)          &
      &     bind(C,name='bandsolve_batched_sm')
@@ -199,7 +199,8 @@
         !integer(kind=c_int) :: old2new(*)
         type(c_ptr), value :: A, b, x, v, kl_array, ku_array,old2new
         end subroutine bandsolve_batched_sm
-#else
+
+#if (0)
         subroutine bandsolve_batched_sm( n, kl_array, ku_array,          &
      &     A, ldA, old2new, b, ldB, x, ldX, v, ldV, batchCount)          &
      &     bind(C,name='bandsolve_batched_sm')

@@ -3,9 +3,22 @@
 #endif
 
 #include <cassert>
+#include <stdlib.h>
 #include <string.h>
 
 extern "C" {
+
+        void dsync() {
+#ifdef USE_GPU
+                cudaError_t istat = cudaDeviceSynchronize();
+                assert( istat == cudaSuccess );
+#else
+                // do nothing
+#endif
+        }
+
+
+
         void *dmalloc( size_t nbytes ) {
                 void *ptr = 0;
 #ifdef USE_GPU
@@ -34,7 +47,10 @@ extern "C" {
 
         void host2acc( void *dest, void *src, size_t nbytes ) {
 #ifdef USE_GPU
+                dsync();
                 cudaError_t istat = cudaMemcpy( dest, src, nbytes, cudaMemcpyHostToDevice );
+                dsync();
+
                 assert( istat == cudaSuccess );
 #else
                 memcpy( dest, src, nbytes );
@@ -44,7 +60,10 @@ extern "C" {
 
         void acc2host( void *dest, void *src, size_t nbytes ) {
 #ifdef USE_GPU
+                dsync();
                 cudaError_t istat = cudaMemcpy( dest, src, nbytes, cudaMemcpyDeviceToHost );
+                dsync();
+
                 assert( istat == cudaSuccess );
 
 #else

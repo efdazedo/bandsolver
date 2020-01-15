@@ -72,7 +72,7 @@
 
         use_trmv_sm = .true.
         if (use_trmv_sm) then
-           call Ztrmv_sm(uplo,trans,diag,mm,nn,A(istart,istart),ldA,         &
+           call Ztrmv_smf(uplo,trans,diag,mm,nn,A(istart,istart),ldA,         &
      &             x(istart), v )
            do i=1,mm
               x( (istart-1) + i) = v(i)
@@ -116,7 +116,7 @@
 !        -----------------------------------------------------
 !        v(:) = triu(L( i1:i2, istart:iend)) * x(istart:iend);
 !        -----------------------------------------------------
-            call Ztrmv_sm(uplo,trans,diag,mm,nn,                          &
+            call Ztrmv_smf(uplo,trans,diag,mm,nn,                          &
      &            A(i1,istart),ldA, x(istart), v)
 
             if (idebug >= 3) then
@@ -184,7 +184,7 @@
 
        use_trmv_sm = .true.
        if (use_trmv_sm) then
-         call Ztrmv_sm(uplo,trans,diag,mm,nn,A(istart,istart),lda,         &
+         call Ztrmv_smf(uplo,trans,diag,mm,nn,A(istart,istart),lda,         &
      &            x(istart),v)
          do i=1,mm
            x((istart-1)+i) = v(i)
@@ -227,7 +227,7 @@
 !        -----------------------------------------------------------
 !        let   v(:) = tril( U(i1:i2, istart:iend)) * x(istart:iend)
 !        -----------------------------------------------------------
-           call Ztrmv_sm(uplo,trans,diag,mm,nn,                          &
+           call Ztrmv_smf(uplo,trans,diag,mm,nn,                          &
      &             A(i1,istart),ldA,x(istart),v)
 
          endif

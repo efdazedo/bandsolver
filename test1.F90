@@ -22,7 +22,7 @@
 !     performance test
 !     ----------------
       n = 512
-      batchCount = 1024
+      batchCount = 256
       kl = 32
       ku = 32
 

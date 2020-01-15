@@ -117,7 +117,6 @@
        ldB = size(B,1)
        ldX = size(X,1)
        ldV = size(v,1)
-#ifdef USE_GPU
 !      -------------------------------
 !      allocate storage on accelerator
 !      -------------------------------
@@ -155,19 +154,15 @@
        nbytes = nbytes * sizeof(ku_array)
        d_ku_array = dmalloc( nbytes )
        call host2acc( d_ku_array, c_loc(ku_array), nbytes )
-#endif
 
 
 
 
        call system_clock(t1,count_rate)
-#ifdef USE_GPU
        call bandsolve_batched_sm(n, d_kl_array,d_ku_array,d_A,ldA,          &
      &                  d_old2new,d_B,ldB,d_xnew,ldX,d_v,ldV,batchCount)
-#else
-       call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
-     &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
-#endif
+!      call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
+!    &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
        call system_clock(t2,count_rate)
        elapsed_time = dble(t2-t1)/dble(count_rate)
        print*,'bandsolve_batched_sm took ', elapsed_time,'sec'
