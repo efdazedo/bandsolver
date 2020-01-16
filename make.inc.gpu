@@ -1,12 +1,12 @@
 FC=gfortran
 CXX=nvcc -x cu
-FFLAGS=-g -fopenmp -DUSE_GPU
+FFLAGS=-O3 -fopenmp -DUSE_GPU -DUSE_DMALLOC
 
 CUDADIR=/usr/local/cuda-10.1
 
 CXXFLAGS=\
         -DUSE_GPU \
-        -g -Xcompiler -fopenmp   -std=c++11 
+        -O3 -Xcompiler -fopenmp   -std=c++11 
 
 
 
