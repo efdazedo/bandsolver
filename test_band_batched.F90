@@ -168,8 +168,8 @@
 	  return
 	endif
 
-        ldV = max( maxval(kl_array(1:batchCount)),                        &
-     &             maxval(ku_array(1:batchCount)) )
+        ldV = max(1,max( maxval(kl_array(1:batchCount)),                 &
+     &             maxval(ku_array(1:batchCount)) ))
 #ifdef USE_DMALLOC
         nbytes = (sizeof_cmplx * ldV) * batchCount
         d_v = dmalloc( nbytes )
