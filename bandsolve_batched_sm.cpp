@@ -1,3 +1,4 @@
+#include <iostream>
 #include "dmalloc.hpp"
 #include "bandsolve_batched_sm.hpp"
 
@@ -22,11 +23,21 @@ void bandsolve_batched_sm( int const n,
 
 #ifdef USE_GPU
 
+   int constexpr idebug = 1;
+
    int constexpr warpsize = 32;
    int constexpr max_nthreads = 1024;
    int const max_klku = ldV;
    int const nwarps = iceil( max_klku, warpsize);
    int const nthreads = max(1, min(max_nthreads,nwarps * warpsize));
+
+   if (idebug >= 1) {
+      std::cout << " max_klku =  " 
+                <<   max_klku
+                << " nthreads = "
+                <<   nthreads
+                << "\n";
+   };
 
    dsync();
    bandsolve_batched_sm<zcomplex><<<batchCount,nthreads>>>(
