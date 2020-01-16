@@ -42,6 +42,7 @@
        type(c_ptr) :: d_v
        type(c_ptr) :: d_old2new, d_kl_array, d_ku_array
        type(c_ptr) :: d_A, d_B, d_xnew
+       type(c_ptr) :: dest, dsrc
 
        max_err = huge
        max_res = huge
@@ -58,7 +59,8 @@
 
       ldB = n
       ldX = n
-      allocate( b(ldB,batchCount), x(ldX,batchCount), xnew(ldX,batchCount) )
+      allocate( b(ldB,batchCount), x(ldX,batchCount),                    &
+     &          xnew(ldX,batchCount) )
       allocate( xdiff(ldX,batchCount), res(ldB,batchCount))
 
 !$omp parallel do private(ibatch,x_re,x_im,i)
@@ -128,41 +130,55 @@
        nbytes = sizeof_complex
        nbytes = nbytes * size(B)
        d_B = dmalloc( nbytes )
-       call host2acc( d_B, c_loc(B), nbytes )
+       dest = d_B
+       dsrc = c_loc(B)
+       call host2acc( dest, dsrc, nbytes )
 
        nbytes = sizeof_complex
        nbytes = nbytes * size(A)
        d_A = dmalloc( nbytes )
-       call host2acc( d_A, c_loc(A), nbytes )
+       dest = d_A
+       dsrc = c_loc(A)
+       call host2acc( dest, dsrc, nbytes )
 
        nbytes = sizeof_complex
        nbytes = nbytes * size(xnew)
        d_xnew = dmalloc( nbytes )
-       call host2acc( d_xnew, c_loc(xnew), nbytes )
+       dest = d_xnew
+       dsrc = c_loc(xnew)
+       call host2acc( dest, dsrc, nbytes )
 
        nbytes = sizeof_int
        nbytes = nbytes * size(old2new)
        d_old2new = dmalloc( nbytes )
-       call host2acc( d_old2new, c_loc(old2new), nbytes )
+       dest = d_old2new
+       dsrc = c_loc(old2new)
+       call host2acc( dest, dsrc, nbytes )
 
        nbytes = sizeof_int
-       nbytes = nbytes * sizeof(kl_array)
+       nbytes = nbytes * size(kl_array)
        d_kl_array = dmalloc( nbytes )
-       call host2acc( d_kl_array, c_loc(kl_array), nbytes )
+       dest = d_kl_array
+       dsrc = c_loc(kl_array)
+       call host2acc( dest, dsrc, nbytes )
 
        nbytes = sizeof_int
-       nbytes = nbytes * sizeof(ku_array)
+       nbytes = nbytes * size(ku_array)
        d_ku_array = dmalloc( nbytes )
-       call host2acc( d_ku_array, c_loc(ku_array), nbytes )
+       dest = d_ku_array
+       dsrc = c_loc(ku_array)
+       call host2acc( dest, dsrc, nbytes )
 
 
 
 
+       call dsync()
        call system_clock(t1,count_rate)
        call bandsolve_batched_sm(n, d_kl_array,d_ku_array,d_A,ldA,          &
      &                  d_old2new,d_B,ldB,d_xnew,ldX,d_v,ldV,batchCount)
 !      call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
 !    &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
+       call dsync()
        call system_clock(t2,count_rate)
        elapsed_time = dble(t2-t1)/dble(count_rate)
        print*,'bandsolve_batched_sm took ', elapsed_time,'sec'
@@ -170,7 +186,9 @@
 
        nbytes = sizeof_complex
        nbytes = nbytes * size(xnew)
-       call acc2host( c_loc(xnew), d_xnew, nbytes )
+       dest = c_loc(xnew)
+       dsrc = d_xnew
+       call acc2host( dest, dsrc, nbytes )
 
        deallocate( v )
 

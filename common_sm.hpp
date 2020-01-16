@@ -20,8 +20,13 @@
 #define DEVICE_FUNCTION __device__
 #define HOST_FUNCTION __host__
 
+#ifdef USE_THRUST
 typedef thrust::complex<double> zcomplex;
 typedef thrust::complex<float>  ccomplex;
+#else
+typedef cuDoubleComplex zcomplex;
+typedef cuFloatComplex ccomplex;
+#endif
 
 
 #else
@@ -106,7 +111,11 @@ static inline
 HOST_FUNCTION DEVICE_FUNCTION
 zcomplex conj( zcomplex x ) {
 #ifdef USE_GPU
-        return( thrust::conj(x) );
+  #ifdef USE_THRUST
+        return(  thrust::conj(x) );
+  #else
+        return( cuConj(x) );
+  #endif
 #else
         return( std::conj( x ) );
 #endif
@@ -117,7 +126,11 @@ static inline
 HOST_FUNCTION DEVICE_FUNCTION
 ccomplex conj( ccomplex x ) {
 #ifdef USE_GPU
+  #ifdef USE_THRUST
         return(  thrust::conj(x) );
+  #else
+        return( cuConjf(x) );
+  #endif
 #else
         return( std::conj(x) );
 #endif
@@ -136,19 +149,20 @@ T make_val( double x ) {
 }
 
 
-#ifdef USE_CUCOMPLEX
-
-template<>
-HOST_FUNCTION DEVICE_FUNCTION
-zcomplex make_val<zcomplex>( double x_re ) {
-        return( make_cuDoubleComplex(x_re, 0.0) );
-}
-
-template<>
-HOST_FUNCTION DEVICE_FUNCTION
-ccomplex make_val<ccomplex>( double x_re ) {
-        return(  make_cuFloatComplex(x_re,0.0) );
-}
+#ifdef USE_GPU
+  #ifndef USE_THRUST 
+   template<>
+   HOST_FUNCTION DEVICE_FUNCTION
+   zcomplex make_val<zcomplex>( double x_re ) {
+           return( make_cuDoubleComplex(x_re, 0.0) );
+   }
+   
+   template<>
+   HOST_FUNCTION DEVICE_FUNCTION
+   ccomplex make_val<ccomplex>( double x_re ) {
+           return(  make_cuFloatComplex(x_re,0.0) );
+   }
+  #endif
 
 #endif
 
@@ -164,7 +178,8 @@ void fma( T& c, T const & a, T const & b ) {
 	c += a*b;
 }
 
-#ifdef USE_CUCOMPLEX
+#ifdef USE_GPU
+#ifndef USE_THRUST
 
 template<>
 void fma<ccomplex>( ccomplex& c, 
@@ -179,6 +194,7 @@ void fma<zcomplex>( zcomplex& c,
         c = cuCadd( c, cuCmul(a,b) );
 }
 
+#endif
 #endif
 
 

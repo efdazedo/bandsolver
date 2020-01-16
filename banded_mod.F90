@@ -6,6 +6,10 @@
       integer, parameter :: wp = dp
 
       interface
+        subroutine dsync() bind(c,name='dsync')
+        use iso_c_binding
+        end subroutine dsync
+
         function dmalloc( nbytes )                                       &
      &      bind(c,name='dmalloc') result(ptr)
         use iso_c_binding
