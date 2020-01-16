@@ -1,0 +1,14 @@
+FC=pgf90
+CXX=pgc++
+FFLAGS= -C -g -mp   -Mstack_arrays   -DUSE_DMALLOC -Mfixed
+
+CXXFLAGS=\
+        -mp   -std=c++11 -Minfo=inline \
+        -g -Mnoautoinline
+
+
+
+# -O2 -Munroll=c:1 -Mlre -Mautoinline -Mvect=simd -Mcache_align   
+
+# CXXFLAGS=-g     -mp   -std=c++11 -Minfo=all
+LIBS= -llapack -lblas -g77libs -lstdc++ 
