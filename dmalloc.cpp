@@ -22,7 +22,7 @@ extern "C" {
         void *dmalloc( size_t nbytes ) {
                 void *ptr = 0;
 #ifdef USE_GPU
-                cudaError_t istat = cudaMalloc( &ptr, nbytes );
+                cudaError_t istat = cudaMallocManaged( &ptr, nbytes, cudaMemAttachGlobal );
                 assert( istat == cudaSuccess ); 
 
 #else
@@ -50,7 +50,7 @@ extern "C" {
                 assert( src != 0);
 #ifdef USE_GPU
                 dsync();
-                cudaError_t istat = cudaMemcpy( dest, src, nbytes, cudaMemcpyHostToDevice );
+                cudaError_t istat = cudaMemcpy( dest, src, nbytes, cudaMemcpyDefault );
                 dsync();
 
                 assert( istat == cudaSuccess );
@@ -65,7 +65,7 @@ extern "C" {
                 assert( src != 0);
 #ifdef USE_GPU
                 dsync();
-                cudaError_t istat = cudaMemcpy( dest, src, nbytes, cudaMemcpyDeviceToHost );
+                cudaError_t istat = cudaMemcpy( dest, src, nbytes, cudaMemcpyDefault );
                 dsync();
 
                 assert( istat == cudaSuccess );

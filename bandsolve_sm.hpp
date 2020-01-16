@@ -23,7 +23,7 @@ void bandsolve_sm( int const n,
                
 {
 #ifdef USE_GPU
-        int const ix_start = threadIdx.x + 
+        int const ix_start = 1 + threadIdx.x + 
                              threadIdx.y*blockDim.x + 
                              threadIdx.z*(blockDim.x*blockDim.y); 
 

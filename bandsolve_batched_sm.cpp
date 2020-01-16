@@ -26,6 +26,7 @@ void bandsolve_batched_sm( int const n,
    int const nwarps = iceil( max_klku, warpsize);
    int const nthreads = max(1, min(max_nthreads,nwarps * warpsize));
 
+   dsync();
    bandsolve_batched_sm<zcomplex><<<batchCount,nthreads>>>(
                            n, kl_array_, ku_array_,
                            A_, ldA,
@@ -34,6 +35,7 @@ void bandsolve_batched_sm( int const n,
                            x_, ldX,
                            v_, ldV,
                            batchCount );
+   dsync();
 #else
 
    bandsolve_batched_sm<zcomplex>(
