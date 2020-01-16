@@ -198,10 +198,10 @@
         use iso_c_binding
         implicit none
         integer(kind=c_int),value:: n, ldA, ldB, ldX, ldV, batchCount
-        !complex(kind=c_double_complex) :: A(*), b(*), x(*), v(*)
-        !integer(kind=c_int) :: kl_array(*), ku_array(*)
-        !integer(kind=c_int) :: old2new(*)
-        type(c_ptr), value :: A, b, x, v, kl_array, ku_array,old2new
+        complex(kind=c_double_complex) :: A(*), b(*), x(*), v(*)
+        integer(kind=c_int) :: kl_array(*), ku_array(*)
+        integer(kind=c_int) :: old2new(*)
+        !type(c_ptr), value :: A, b, x, v, kl_array, ku_array,old2new
         end subroutine bandsolve_batched_sm
 
 #if (0)

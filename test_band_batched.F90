@@ -30,19 +30,24 @@
 
        real(kind=wp) :: huge = 1.0d9
 
-       complex(kind=wp), parameter :: one_z = dcmplx(1.0d0,0.0d0)
-       real(kind=wp), parameter :: one_d = real(1.0d0,kind=wp)
-       integer, parameter :: one_i = 1
+       complex(kind=wp),parameter:: one_z = cmplx(1.0d0,0.0d0,kind=wp)
+       real(kind=wp),   parameter:: one_d = real(1.0d0,kind=wp)
+       integer,         parameter:: one_i = 1
 
-       integer, parameter :: sizeof_real = c_sizeof(one_d)
-       integer, parameter :: sizeof_complex = c_sizeof(one_z)
-       integer, parameter :: sizeof_int = c_sizeof(one_i)
+       integer(kind=c_size_t),parameter:: sizeof_real = c_sizeof(one_d)
+       integer(kind=c_size_t),parameter:: sizeof_cmplx = c_sizeof(one_z)
+       integer(kind=c_size_t),parameter:: sizeof_int = c_sizeof(one_i)
 
        integer(kind=c_size_t) :: nbytes
        type(c_ptr) :: d_v
        type(c_ptr) :: d_old2new, d_kl_array, d_ku_array
        type(c_ptr) :: d_A, d_B, d_xnew
        type(c_ptr) :: dest, dsrc
+
+       if (idebug >= 1) then
+               print*,'sizeof_cmplx,sizeof_real,sizeof_int',          &
+     &                 sizeof_cmplx,sizeof_real,sizeof_int
+       endif
 
        max_err = huge
        max_res = huge
@@ -122,26 +127,26 @@
 !      -------------------------------
 !      allocate storage on accelerator
 !      -------------------------------
-       nbytes = sizeof_complex
+       nbytes = sizeof_cmplx
        nbytes = nbytes * size(v)
        d_v = dmalloc( nbytes )
 
 
-       nbytes = sizeof_complex
+       nbytes = sizeof_cmplx
        nbytes = nbytes * size(B)
        d_B = dmalloc( nbytes )
        dest = d_B
        dsrc = c_loc(B)
        call host2acc( dest, dsrc, nbytes )
 
-       nbytes = sizeof_complex
+       nbytes = sizeof_cmplx
        nbytes = nbytes * size(A)
        d_A = dmalloc( nbytes )
        dest = d_A
        dsrc = c_loc(A)
        call host2acc( dest, dsrc, nbytes )
 
-       nbytes = sizeof_complex
+       nbytes = sizeof_cmplx
        nbytes = nbytes * size(xnew)
        d_xnew = dmalloc( nbytes )
        dest = d_xnew
@@ -184,7 +189,7 @@
        print*,'bandsolve_batched_sm took ', elapsed_time,'sec'
 
 
-       nbytes = sizeof_complex
+       nbytes = sizeof_cmplx
        nbytes = nbytes * size(xnew)
        dest = c_loc(xnew)
        dsrc = d_xnew
