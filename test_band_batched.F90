@@ -45,7 +45,7 @@
        type(c_ptr) :: dest, dsrc
 
        if (idebug >= 1) then
-               print*,'sizeof_cmplx,sizeof_real,sizeof_int',          &
+               print*,'sizeof_cmplx,sizeof_real,sizeof_int',             &
      &                 sizeof_cmplx,sizeof_real,sizeof_int
        endif
 
@@ -54,7 +54,7 @@
 
       ldA = n
 
-#ifdef USE_MANAGED_MEMORY
+#ifdef USE_DMALLOC
       nbytes = sizeof_int * batchCount
       d_kl_array = dmalloc( nbytes )
       d_ku_array = dmalloc( nbytes )
@@ -74,6 +74,11 @@
       allocate( kl_array(batchCount), ku_array(batchCount) )
       allocate( old2new(n,batchCount) )
       allocate( A(ldA, n, batchCount), Aorg(ldA,n,batchCount)  )
+
+      d_kl_array = c_loc(kl_array)
+      d_ku_array = c_loc(ku_array)
+      d_A = c_loc(A)
+      d_Aorg = c_loc(Aorg)
 #endif
 
 
@@ -87,7 +92,7 @@
       ldB = n
       ldX = n
 
-#ifdef USE_MANAGED_MEMORY
+#ifdef USE_DMALLOC
       nbytes = sizeof_cmplx * ldB * batchCount
       d_b = dmalloc( nbytes )
       d_res = dmalloc( nbytes )
@@ -106,6 +111,12 @@
       allocate( b(ldB,batchCount), x(ldX,batchCount),                    &
      &          xnew(ldX,batchCount) )
       allocate( xdiff(ldX,batchCount), res(ldB,batchCount))
+      d_b = c_loc(b)
+      d_res = c_loc(res)
+
+      d_x = c_loc(x)
+      d_xnew = c_loc(xnew)
+      d_xdiff = c_loc(xdiff)
 #endif
 
 !$omp parallel do private(ibatch,x_re,x_im,i)
@@ -158,13 +169,14 @@
 	endif
 
         ldV = max( maxval(kl_array(1:batchCount)),                        &
-                   maxval(ku_array(1:batchCount)) )
-#ifdef USE_MANAGED_MEMORY
+     &             maxval(ku_array(1:batchCount)) )
+#ifdef USE_DMALLOC
         nbytes = (sizeof_cmplx * ldV) * batchCount
         d_v = dmalloc( nbytes )
         call c_f_pointer( d_v, v, (/ ldV, batchCount /) )
 #else
         allocate( v(ldV,batchCount) )
+        d_v = c_loc(d_v)
 #endif
 
        ldB = size(B,1)
@@ -271,19 +283,11 @@
        enddo
        enddo
 
-#if (0)
-!      --------
-!      clean up
-!      --------
-       deallocate( res, xdiff )
-       deallocate( b, x, xnew )
-       deallocate( A, Aorg )
-       deallocate( old2new )
-#endif
 !      ---------------------------------
 !      deallocate storage 
 !      ---------------------------------
 
+#ifdef USE_DMALLOC
 
        call dfree( d_v )
        call dfree( d_old2new )
@@ -299,6 +303,22 @@
        call dfree( d_xnew )
        call dfree( d_x )
        call dfree( d_xdiff )
+#else
+       deallocate( v )
+       deallocate( old2new )
+       deallocate( kl_array )
+       deallocate( ku_array )
+
+       deallocate( A )
+       deallocate( Aorg )
+
+       deallocate( b )
+       deallocate( res )
+
+       deallocate( xnew )
+       deallocate( x )
+       deallocate( xdiff )
+#endif
 
        return
        end subroutine test_band_batched
