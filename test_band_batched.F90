@@ -182,63 +182,16 @@
        ldB = size(B,1)
        ldX = size(X,1)
        ldV = size(v,1)
-#if (0)
-!      -------------------------------
-!      allocate storage on accelerator
-!      -------------------------------
-       nbytes = sizeof_cmplx
-       nbytes = nbytes * size(v)
-       d_v = dmalloc( nbytes )
 
 
-       nbytes = sizeof_cmplx
-       nbytes = nbytes * size(B)
-       d_B = dmalloc( nbytes )
-       dest = d_B
-       dsrc = c_loc(B)
-       call host2acc( dest, dsrc, nbytes )
 
-       nbytes = sizeof_cmplx
-       nbytes = nbytes * size(A)
-       d_A = dmalloc( nbytes )
-       dest = d_A
-       dsrc = c_loc(A)
-       call host2acc( dest, dsrc, nbytes )
-
-       nbytes = sizeof_cmplx
-       nbytes = nbytes * size(xnew)
-       d_xnew = dmalloc( nbytes )
-       dest = d_xnew
-       dsrc = c_loc(xnew)
-       call host2acc( dest, dsrc, nbytes )
-
-       nbytes = sizeof_int
-       nbytes = nbytes * size(old2new)
-       d_old2new = dmalloc( nbytes )
-       dest = d_old2new
-       dsrc = c_loc(old2new)
-       call host2acc( dest, dsrc, nbytes )
-
-       nbytes = sizeof_int
-       nbytes = nbytes * size(kl_array)
-       d_kl_array = dmalloc( nbytes )
-       dest = d_kl_array
-       dsrc = c_loc(kl_array)
-       call host2acc( dest, dsrc, nbytes )
-
-       nbytes = sizeof_int
-       nbytes = nbytes * size(ku_array)
-       d_ku_array = dmalloc( nbytes )
-       dest = d_ku_array
-       dsrc = c_loc(ku_array)
-       call host2acc( dest, dsrc, nbytes )
-#endif
-
-
+!      --------------------------------------------------
+!      1st call to warm up cache or perform data transfer
+!      --------------------------------------------------
+       call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
+     &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
 
        call system_clock(t1,count_rate)
-!       call bandsolve_batched_sm(n, d_kl_array,d_ku_array,d_A,ldA,          &
-!     &                  d_old2new,d_B,ldB,d_xnew,ldX,d_v,ldV,batchCount)
        call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
      &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
        call system_clock(t2,count_rate)
@@ -246,13 +199,6 @@
        print*,'bandsolve_batched_sm took ', elapsed_time,'sec'
 
 
-#if (0)
-       nbytes = sizeof_cmplx
-       nbytes = nbytes * size(xnew)
-       dest = c_loc(xnew)
-       dsrc = d_xnew
-       call acc2host( dest, dsrc, nbytes )
-#endif
 
 
 

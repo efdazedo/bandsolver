@@ -2,6 +2,7 @@
 #include <cuda.h>
 #endif
 
+#include <cstddef>
 #include <cassert>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +20,7 @@ extern "C" {
 
 
 
-        void *dmalloc( size_t nbytes ) {
+        void *dmalloc( size_t const nbytes ) {
                 void *ptr = 0;
 #ifdef USE_GPU
                 cudaError_t istat = cudaMallocManaged( &ptr, nbytes, cudaMemAttachGlobal );
@@ -45,7 +46,7 @@ extern "C" {
         }
 
 
-        void host2acc( void *dest, void *src, size_t nbytes ) {
+        void host2acc( void *dest, void const * const src, size_t const nbytes ) {
                 assert( dest != 0);
                 assert( src != 0);
 #ifdef USE_GPU
@@ -60,7 +61,7 @@ extern "C" {
         }
 
 
-        void acc2host( void *dest, void *src, size_t nbytes ) {
+        void acc2host( void *dest, void const * const src, size_t const nbytes ) {
                 assert( dest != 0);
                 assert( src != 0);
 #ifdef USE_GPU

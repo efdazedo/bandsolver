@@ -1,4 +1,6 @@
+#include "dmalloc.hpp"
 #include "bandsolve_batched_sm.hpp"
+
 
 extern "C" {
 
