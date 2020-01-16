@@ -23,8 +23,8 @@
 !     ----------------
       n = 512
       batchCount = 256
-      kl = 32
-      ku = 32
+      kl = 16
+      ku = 17
 
       print*,'n, kl, ku, batchCount ', n,kl,ku,batchCount
 
