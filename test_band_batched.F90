@@ -17,6 +17,8 @@
 
        integer :: ldA,ldB,ldX,ldV
        integer :: ibatch, i, info
+       integer :: min_kl, max_kl, avg_kl
+       integer :: min_ku, max_ku, avg_ku
        logical :: isok
 
        real(kind=wp) :: err 
@@ -168,8 +170,29 @@
 	  return
 	endif
 
-        ldV = max(1,max( maxval(kl_array(1:batchCount)),                 &
-     &             maxval(ku_array(1:batchCount)) ))
+        min_kl = minval( kl_array(1:batchCount) )
+        max_kl = maxval( kl_array(1:batchCount) )
+        avg_kl = sum( kl_array(1:batchCount) )/batchCount
+
+        min_ku = minval( ku_array(1:batchCount) )
+        max_ku = maxval( ku_array(1:batchCount) )
+        avg_ku = sum( ku_array(1:batchCount) )/batchCount
+
+        ldV = max(1,max(max_kl,max_ku))
+        if (idebug >= 1) then
+            min_kl = minval( kl_array(1:batchCount) )
+            max_kl = maxval( kl_array(1:batchCount) )
+            avg_kl = sum( kl_array(1:batchCount) )/batchCount
+
+            min_ku = minval( ku_array(1:batchCount) )
+            max_ku = maxval( ku_array(1:batchCount) )
+            avg_ku = sum( ku_array(1:batchCount) )/batchCount
+
+
+            print*,'min_kl, avg_kl, max_kl', min_kl, avg_kl, max_kl
+            print*,'min_ku, avg_ku, max_ku', min_ku, avg_ku, max_ku
+        endif
+
 #ifdef USE_DMALLOC
         nbytes = (sizeof_cmplx * ldV) * batchCount
         d_v = dmalloc( nbytes )
