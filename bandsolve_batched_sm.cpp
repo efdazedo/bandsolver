@@ -29,7 +29,8 @@ void bandsolve_batched_sm( int const n,
    int constexpr max_nthreads = 1024;
    int const max_klku = ldV;
    int const nwarps = iceil( max_klku, warpsize);
-   int const nthreads = max(1, min(max_nthreads,nwarps * warpsize));
+   // int const nthreads = max(1, min(max_nthreads,nwarps * warpsize));
+   int const nthreads = 64;
 
    if (idebug >= 1) {
       std::cout << " max_klku =  " 

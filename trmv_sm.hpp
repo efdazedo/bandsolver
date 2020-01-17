@@ -61,7 +61,7 @@ void trmv_sm( char const uplo,
          T const zero_T = make_val<T>(0.0);
 	
 
-        SYNC_THREADS;
+         SYNC_THREADS;
 
         // ------------------------------------------------
         // check for special cases for further optimization
