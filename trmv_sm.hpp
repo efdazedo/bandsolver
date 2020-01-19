@@ -85,7 +85,9 @@ void trmv_sm( char const uplo,
 
              T const *Ap = &( A(ia,jastart) );
              for(int ja=jastart; ja <= jaend; ja++) {
-                      T const aij = *Ap; Ap += lda;
+                     T const aij = *Ap; Ap += lda;
+
+
                       T const xj = x(ja);
                       // vi += aij * xj;
                       fma<T>(vi,aij,xj);
