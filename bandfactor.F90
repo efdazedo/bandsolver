@@ -1,13 +1,21 @@
-      subroutine bandfactor( n, A, lda, old2new, kl, ku, info )
+#define AB(i,j) A(kl_inout+ku_inout+1+(i)-(j),(j))
+
+      subroutine bandfactor( n, A, lda, old2new,kl_inout,ku_inout,info,  &
+     &                       is_full_in )
       implicit none
 
       integer, parameter :: idebug = 0
 
       integer, intent(in) :: n, lda
       integer, intent(inout) :: old2new(*)
-      integer, intent(inout)  :: kl, ku, info
+      integer, intent(inout)  :: kl_inout, ku_inout, info
       complex(kind=wp), intent(inout) :: A(lda,*)
 
+      logical, optional, intent(in) :: is_full_in
+
+
+      logical :: is_full
+      integer :: kl, ku
 
       character :: side, uplo, trans, diag
       integer :: istart,iend,isize
@@ -17,47 +25,76 @@
       integer :: i,j, itemp, ia,ja
       integer :: ldL, ldU
       complex(kind=wp), allocatable :: Linv(:,:), Uinv(:,:)
+      complex(kind=wp), allocatable :: Lmat(:,:), Umat(:,:)
       complex(kind=wp) :: alpha
-      complex(kind=wp) :: Uij, Lij
+      complex(kind=wp) :: Aij, Uij, Lij
 
+      is_full = .true.
+      if (present(is_full_in)) then
+              is_full = is_full_in
+      endif
+      kl = kl_inout
+      ku = ku_inout
 
       mm = n
       nn = n
 
+      if (is_full) then
+!     -------------------------------
+!     matrix is in full dense storage
+!     -------------------------------
+        call Zgetrf( mm,nn, A,lda, ipiv, info)
+        if (info.ne.0) then
+            print*,'bandfactor: Zgetrf return info=',info
+            return
+        endif
 
-      call Zgetrf( mm,nn, A,lda, ipiv, info)
-      if (info.ne.0) then
-          print*,'bandfactor: Zgetrf return info=',info
-          return
+      else
+!     -----------------------------------------
+!     matrix is in lapack banded storage format
+!     note
+!     A(kl+ku+1+i-j,j) = A(i,j),   for max(1,j-ku) <= i <= min(m,j+kl)
+!     -----------------------------------------
+        call Zgbtrf( mm,nn,kl,ku,A,ldA,ipiv,info)
+        if (info.ne.0) then
+                print*,'bandfactor: Zgbtrf return info=',info
+                return
+        endif
       endif
 
 !     ---------------------------------------
 !     compute lower (kl) and upper (ku) bands
 !     ---------------------------------------
 !
-      kl = 0;
-      ku = 0;
-      do j=1,n
-      do i=1,n
-         islower = (i-j) >= 0
-         if (islower) then
-           Lij = A(i,j)
-           if (Lij .ne. 0) then
-             kl = max(kl, i-j)
-           endif
-         endif
-         isupper = (j-i) >= 0
-         if (isupper) then
-             Uij = A(i,j)
-             if (Uij .ne. 0) then
-                ku = max(ku, j-i)
+      if (is_full) then
+        kl = 0;
+        ku = 0;
+        do j=1,n
+        do i=1,n
+           Aij = A(i,j)
+           islower = (i-j) >= 0
+           if (islower) then
+             Lij = Aij
+             if (Lij .ne. 0) then
+               kl = max(kl, i-j)
              endif
+           endif
+           isupper = (j-i) >= 0
+           if (isupper) then
+               Uij = Aij
+               if (Uij .ne. 0) then
+                  ku = max(ku, j-i)
+               endif
+           endif
+         enddo
+         enddo
+  
+         if (idebug >= 1) then
+              print*,'bandfactor:n,kl,ku', n,kl,ku
          endif
-       enddo
-       enddo
 
-       if (idebug >= 1) then
-            print*,'bandfactor:n,kl,ku', n,kl,ku
+       else
+         ku = kl + ku + 1
        endif
 !
 !% ------------------------------
@@ -70,7 +107,7 @@
 !% ------------------------
       ldL = kl
       ldU = ku
-      allocate( Linv(ldL,kl), Uinv(ldU,ku) )
+      allocate( Lmat(ldL,kl), Linv(ldL,kl), Umat(ldU,ku), Uinv(ldU,ku) )
       do istart=1,n,kl
        iend = min( n, istart+kl-1);
        isize = iend - istart + 1;
@@ -84,8 +121,35 @@
 !    --------------------------------------------------------------------------------
        do j=1,isize
        do i=1,isize
-          Linv(i,j) = merge( 1, 0, (i.eq.j) )
+          Linv(i,j) = merge(1,0,i.eq.j)
        enddo
+       enddo
+
+       do j=1,isize
+       do i=1,(j-1)
+         Lmat(i,j) = 0
+       enddo
+       enddo
+
+
+       do j=1,isize
+       do i=(j+1),isize
+          ia = (istart-1) + i
+          ja = (istart-1) + j
+          if (is_full) then
+             Lmat(i,j) = A(ia,ja)
+          else
+             Lmat(i,j) = AB(ia,ja)
+          endif
+       enddo
+       enddo
+
+!      --------------------------
+!      L matrix has unit diagonal
+!      --------------------------
+       do j=1,isize
+          i = j
+          Lmat(i,j) = 1
        enddo
 
        side = 'Left'
@@ -96,7 +160,7 @@
        nn = isize
        alpha = 1
        call Ztrsm( side,uplo,trans,diag, mm,nn,alpha,                                           &
-     &             A(istart,istart),ldA,Linv,ldL)
+     &             Lmat,ldA,Linv,ldL)
 
 !       -------------------------------------------------------
 !      copy lower triangular Linv back to A, note Linv also is unit diagonal
@@ -105,7 +169,11 @@
         do i=(j+1),mm
           ia = (istart-1) + i
           ja = (istart-1) + j
-          A( ia,ja) = Linv(i,j)
+          if (is_full) then
+            A( ia,ja) = Linv(i,j)
+          else
+            AB(ia,ja) = Linv(i,j)
+          endif
         enddo
         enddo
 
@@ -125,9 +193,30 @@
 !    -------------------------------------------------------------------------------
         do j=1,isize
         do i=1,isize
-          Uinv(i,j) = merge( 1, 0, i.eq.j)
+          Uinv(i,j) = merge(1,0,i.eq.j)
         enddo
         enddo
+
+         do j=1,isize
+         do i=(j+1),isize
+           Umat(i,j) = 0
+         enddo
+         enddo
+
+        do j=1,isize
+        do i=1,j
+           ia = (istart-1) + i
+           ja = (istart-1) + j
+           if (is_full) then
+              Umat(i,j) = A(ia,ja)
+           else
+              Umat(i,j) = AB(ia,ja)
+           endif
+         enddo
+         enddo
+
+
+
 
 
         side = 'Left'
@@ -138,7 +227,7 @@
         nn = isize
         alpha = 1
         call Ztrsm( side, uplo, trans, diag, mm,nn,alpha,                                   &
-     &              A(istart,istart),ldA,Uinv,ldU)
+     &              Umat,ldA,Uinv,ldU)
 
 !       ---------------
 !       copy upper triangular Uinv back to A
@@ -147,13 +236,17 @@
         do i=1,j
           ia = (istart-1) + i
           ja = (istart-1) + j
-          A(ia,ja) = Uinv(i,j)
+          if (is_full) then
+            A(ia,ja) = Uinv(i,j)
+          else
+            AB(ia,ja) = Uinv(i,j)
+          endif
         enddo
         enddo
 
        enddo
 
-       deallocate( Linv, Uinv )
+       deallocate( Lmat, Linv, Umat, Uinv )
 !
 !
 !% ---------------------------
@@ -180,14 +273,24 @@
 
        if (idebug >= 2) then
           do j=1,n
-          do i=(j+1),n
-           print *,'L(',i,',',j,') = ', A(i,j)
+          do i=(j+1),min(n,kl+j)
+           if (is_full) then
+               Lij = A(i,j)
+           else
+               Lij = AB(i,j)
+           endif
+           print *,'L(',i,',',j,') = ', Lij
           enddo
           enddo
 
           do j=1,n
-          do i=1,j
-           print *,'U(',i,',',j,') = ',A(i,j)
+          do i=max(1,j-ku),j
+           if (is_full) then
+               Uij = A(i,j)
+           else
+               Uij = AB(i,j)
+           endif
+           print *,'U(',i,',',j,') = ',Uij
           enddo
           enddo
 
@@ -195,6 +298,9 @@
             print*,'old2new(',j,') = ',old2new(j)
           enddo
        endif
+
+       kl_inout = kl
+       ku_inout = ku
 
        return
        end subroutine bandfactor
