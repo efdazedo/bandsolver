@@ -20,6 +20,8 @@
       is_full_c = is_full
 !$omp parallel do private(ibatch,kl,ku,info)
       do ibatch=1,batchCount
+         kl = kl_array(ibatch)
+         ku = ku_array(ibatch)
          call bandfactor(n,A(1,1,ibatch),lda,                            &
      &                   old2new(1,ibatch),kl,ku,info,is_full_c)
          kl_array(ibatch) = kl

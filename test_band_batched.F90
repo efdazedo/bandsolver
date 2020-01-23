@@ -94,6 +94,8 @@
       d_A = c_loc(A)
       d_Aorg = c_loc(Aorg)
 #endif
+      kl_array(:) = kl
+      ku_array(:) = ku
 
 
       call gen_banded_batched( n, kl, ku, A, lda, is_full, batchCount)

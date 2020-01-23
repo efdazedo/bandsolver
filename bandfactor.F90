@@ -53,7 +53,7 @@
 !     -----------------------------------------
         isok = (ldA >= (2*kl+ku+1))
         if (.not.isok) then
-            print*,'bandfactor: invalid ldA. kl,ku,ldA ', &
+            print*,'bandfactor: invalid ldA. kl,ku,ldA ',                &
      &                                       kl,ku,ldA
             stop '** error in bandfactor ** '
         endif
@@ -99,8 +99,10 @@
 
        else
 !      ----------------------
-!      note keep ku unchanged
+!      note ku is increased
 !      ----------------------
+       ku = ku + kl
+       
        endif
 !
 !% ------------------------------
@@ -111,9 +113,12 @@
 !% ------------------------
 !% note L has unit diagonal
 !% ------------------------
-      ldL = kl
-      ldU = ku
-      allocate( Lmat(ldL,kl), Linv(ldL,kl), Umat(ldU,ku), Uinv(ldU,ku) )
+      ldL = kl+1
+      ldU = ku+1
+      allocate( Lmat(ldL,kl), Linv(ldL,kl)) 
+      Lmat(:,:) = 0
+      Linv(:,:) = 0
+
       do istart=1,n,kl
        iend = min( n, istart+kl-1);
        isize = iend - istart + 1;
@@ -132,14 +137,18 @@
        enddo
 
        do j=1,isize
-       do i=1,(j-1)
+         do i=1,(j-1)
          Lmat(i,j) = 0
-       enddo
-       enddo
+         enddo
+
+!      --------------------------
+!      L matrix has unit diagonal
+!      --------------------------
+         i = j
+         Lmat(i,j) = 1
 
 
-       do j=1,isize
-       do i=(j+1),isize
+        do i=(j+1),isize
           ia = (istart-1) + i
           ja = (istart-1) + j
           if (is_full) then
@@ -147,16 +156,9 @@
           else
              Lmat(i,j) = AB(ia,ja)
           endif
-       enddo
+        enddo
        enddo
 
-!      --------------------------
-!      L matrix has unit diagonal
-!      --------------------------
-       do j=1,isize
-          i = j
-          Lmat(i,j) = 1
-       enddo
 
        side = 'Left'
        uplo = 'Lower'
@@ -186,6 +188,12 @@
        enddo
 !
 !
+      deallocate( Lmat, Linv )
+
+      allocate( Umat(ldU,ku), Uinv(ldU,ku) )
+      Umat(:,:) = 0
+      Uinv(:,:) = 0
+
       do istart=1,n,ku
        iend = min(n, istart+ku-1)
        isize = iend - istart + 1
@@ -203,14 +211,9 @@
         enddo
         enddo
 
-         do j=1,isize
-         do i=(j+1),isize
-           Umat(i,j) = 0
-         enddo
-         enddo
 
         do j=1,isize
-        do i=1,j
+         do i=1,j
            ia = (istart-1) + i
            ja = (istart-1) + j
            if (is_full) then
@@ -218,7 +221,12 @@
            else
               Umat(i,j) = AB(ia,ja)
            endif
-         enddo
+          enddo
+
+          do i=(j+1),isize
+           Umat(i,j) = 0
+          enddo
+
          enddo
 
 
@@ -252,7 +260,7 @@
 
        enddo
 
-       deallocate( Lmat, Linv, Umat, Uinv )
+       deallocate( Umat, Uinv )
 !
 !
 !% ---------------------------
@@ -305,8 +313,10 @@
           enddo
        endif
 
-       kl_inout = kl
-       ku_inout = ku
+       if (is_full) then
+         kl_inout = kl
+         ku_inout = ku
+       endif
 
        return
        end subroutine bandfactor

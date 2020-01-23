@@ -13,7 +13,7 @@ template<typename T>
 DEVICE_FUNCTION
 void bandsolve_sm( int const n,
                 int const kl,
-                int const ku,
+                int const ku_in,
                 T const A_[],
                 int const ldA,
                 int const old2new_[],
@@ -35,6 +35,7 @@ void bandsolve_sm( int const n,
 #endif
         int const ldAB = ldA - 1;
 
+        int const ku = (is_full) ? ku_in : ku_in + kl;
 
 
         auto x = [&] (int const i) -> T& {
@@ -42,7 +43,11 @@ void bandsolve_sm( int const n,
         };
 
         auto AB =[&] (int const i, int const j) -> T const & {
-                return( A_[ indx2f( kl+ku+1+i-j,j, ldA)] );
+                bool const is_in_band = (max(1,j-ku) <= i) && (i <= min(n,j+kl));
+                assert( is_in_band );
+
+                return(   A_[ indx2f( kl+ku_in+1+i-j,j, ldA)] );
+                                        
         };
 
         auto A = [&] (int const ia, int const ja) -> T const & {
@@ -141,7 +146,8 @@ void bandsolve_sm( int const n,
 */
         SYNC_THREADS;
 
-        {
+        if ((mm >= 1) && (nn >= 1)) {
+
             char const uplo = 'U';
             char const trans = 'N';
             char const diag = 'N';
@@ -187,7 +193,7 @@ void bandsolve_sm( int const n,
 !     ------------------------------------------------------------------------
 */
         SYNC_THREADS;
-         {
+        {
 
 
           int const nn = isize;
@@ -226,7 +232,7 @@ void bandsolve_sm( int const n,
          int const mm = i2-i1+1;
          int const nn = isize;
 
-         {
+         if ((mm >= 1) && (nn >= 1)) {
           char const uplo = 'L';
           char const trans = 'N';
           char const diag = 'N';
