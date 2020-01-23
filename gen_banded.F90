@@ -47,7 +47,7 @@
          if (.not.isok) then
               print*,'gen_banded: invalid ldA. kl,ku,ldA ',              &
      &                                         kl,ku,ldA
-              return
+              stop '** error in gen_banded ** '
          endif
 
 !  ---------------------------------------------------------------

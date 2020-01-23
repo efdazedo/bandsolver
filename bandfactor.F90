@@ -51,6 +51,14 @@
 !     note
 !     A(kl+ku+1+i-j,j) = AB(i,j),   for max(1,j-ku) <= i <= min(m,j+kl)
 !     -----------------------------------------
+        isok = (ldA >= (2*kl+ku+1))
+        if (.not.isok) then
+            print*,'bandfactor: invalid ldA. kl,ku,ldA ', &
+     &                                       kl,ku,ldA
+            stop '** error in bandfactor ** '
+        endif
+
+
         call Zgbtrf( mm,nn,kl,ku,A,ldA,ipiv,info)
         if (info.ne.0) then
                 print*,'bandfactor: Zgbtrf return info=',info
