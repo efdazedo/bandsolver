@@ -46,6 +46,8 @@
        type(c_ptr) :: d_A, d_Aorg, d_b, d_res, d_x, d_xdiff, d_xnew
        type(c_ptr) :: dest, dsrc
 
+       logical :: is_full = .true.
+
        if (idebug >= 1) then
                print*,'sizeof_cmplx,sizeof_real,sizeof_int',             &
      &                 sizeof_cmplx,sizeof_real,sizeof_int
@@ -154,7 +156,7 @@
 
        call system_clock(t1,count_rate)
        call bandfactor_batched(n,A,lda,old2new,kl_array,ku_array,           &
-     &              info_array, batchCount)
+     &              info_array, is_full, batchCount)
        call system_clock(t2,count_rate)
        elapsed_time = dble(t2-t1)/dble(count_rate)
        print*,'bandfactor_batched took ',elapsed_time,'sec'

@@ -1,7 +1,7 @@
 #define AB(i,j) A(kl_inout+ku_inout+1+(i)-(j),(j))
 
       subroutine bandfactor( n, A, lda, old2new,kl_inout,ku_inout,info,  &
-     &                       is_full_in )
+     &                       is_full )
       implicit none
 
       integer, parameter :: idebug = 0
@@ -10,11 +10,10 @@
       integer, intent(inout) :: old2new(*)
       integer, intent(inout)  :: kl_inout, ku_inout, info
       complex(kind=wp), intent(inout) :: A(lda,*)
+      logical, intent(in) :: is_full
 
-      logical, optional, intent(in) :: is_full_in
 
 
-      logical :: is_full
       integer :: kl, ku
 
       character :: side, uplo, trans, diag
@@ -29,10 +28,6 @@
       complex(kind=wp) :: alpha
       complex(kind=wp) :: Aij, Uij, Lij
 
-      is_full = .true.
-      if (present(is_full_in)) then
-              is_full = is_full_in
-      endif
       kl = kl_inout
       ku = ku_inout
 
@@ -53,7 +48,7 @@
 !     -----------------------------------------
 !     matrix is in lapack banded storage format
 !     note
-!     A(kl+ku+1+i-j,j) = A(i,j),   for max(1,j-ku) <= i <= min(m,j+kl)
+!     A(kl+ku+1+i-j,j) = AB(i,j),   for max(1,j-ku) <= i <= min(m,j+kl)
 !     -----------------------------------------
         call Zgbtrf( mm,nn,kl,ku,A,ldA,ipiv,info)
         if (info.ne.0) then
@@ -94,7 +89,9 @@
          endif
 
        else
-         ku = kl + ku + 1
+!      ----------------------
+!      note keep ku unchanged
+!      ----------------------
        endif
 !
 !% ------------------------------
@@ -304,3 +301,4 @@
 
        return
        end subroutine bandfactor
+#undef AB
