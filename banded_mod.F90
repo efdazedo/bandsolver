@@ -208,6 +208,7 @@
       end interface
 
       contains
+#include "zgbmv.F90"
 #include "gen_banded.F90"
 #include "gen_banded_batched.F90"
 

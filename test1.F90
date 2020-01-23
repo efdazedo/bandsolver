@@ -3,6 +3,8 @@
       use banded_mod
       implicit none
       integer :: n, kl, ku, batchCount
+      integer :: icase
+      logical :: is_full
       real(kind=wp) :: max_err, max_res
 
       n = 100
@@ -12,11 +14,14 @@
 
       print*,'n, kl, ku, batchCount ', n,kl,ku,batchCount
 
-      call test_band_batched(n,kl,ku,                                    &
-     &       max_err, max_res, batchCount )
+      do icase=0,1
+        is_full = (icase.ne.0)
+        call test_band_batched(n,kl,ku,                                    &
+     &       max_err, max_res, is_full, batchCount )
 
-      print*,'max_err = ',max_err
-      print*,'max_res = ',max_res
+        print*,'max_err = ',max_err
+        print*,'max_res = ',max_res
+      enddo
 
 !     ----------------
 !     performance test
@@ -28,10 +33,14 @@
 
       print*,'n, kl, ku, batchCount ', n,kl,ku,batchCount
 
-      call test_band_batched(n,kl,ku,                                    &
-     &       max_err, max_res, batchCount )
+      do icase=0,1
+        is_full = (icase.ne.0)
+        print*,'is_full = ', is_full
+        call test_band_batched(n,kl,ku,                                   &
+     &       max_err, max_res, is_full, batchCount )
 
-      print*,'max_err = ',max_err
+        print*,'max_err = ',max_err
+      enddo
 
       stop
       end program test1

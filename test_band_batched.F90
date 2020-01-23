@@ -1,12 +1,13 @@
       subroutine test_band_batched(n,kl,ku,                                     &
-     &                 max_err, max_res,batchCount )
+     &                 max_err, max_res, is_full,batchCount )
 ! % ---------------------------------------------
 ! % simple test for bandfactor() and bandsolver()
 ! % ---------------------------------------------
       use iso_c_binding
       implicit none
       integer, intent(in) :: n, kl, ku, batchCount
-      real(kind=wp) :: max_err, max_res
+      logical, intent(in)  :: is_full 
+      real(kind=wp), intent(out) :: max_err, max_res
 
        integer, parameter :: idebug = 1
        complex(kind=wp), pointer :: A(:,:,:)
@@ -26,6 +27,7 @@
        integer, pointer :: kl_array(:)
        integer, pointer :: ku_array(:)
        integer :: info_array(batchCount)
+       integer :: mm,nn,ld1, inc1, inc2
 
        integer :: t1,t2,count_rate
        real(kind=wp) :: elapsed_time
@@ -46,7 +48,6 @@
        type(c_ptr) :: d_A, d_Aorg, d_b, d_res, d_x, d_xdiff, d_xnew
        type(c_ptr) :: dest, dsrc
 
-       logical :: is_full = .true.
        logical(kind=c_bool) :: is_full_c  
 
 
@@ -58,7 +59,14 @@
        max_err = huge
        max_res = huge
 
-      ldA = n
+       if (is_full) then
+          ldA = n
+       else
+!         ------------------------------
+!         use lapack band storage format
+!         ------------------------------
+          ldA  = 2*kl + ku + 1
+       endif
 
 #ifdef USE_DMALLOC
       nbytes = sizeof_int * batchCount
@@ -88,7 +96,7 @@
 #endif
 
 
-      call gen_banded_batched( n, kl, ku, A, lda, batchCount)
+      call gen_banded_batched( n, kl, ku, A, lda, is_full, batchCount)
 
 !$omp parallel do private(ibatch)
       do ibatch=1,batchCount
@@ -144,10 +152,23 @@
 ! % -------------------------
 ! % generate solution and rhs
 ! % -------------------------
+       if (is_full) then
 !$omp  parallel do private(ibatch)
-       do ibatch=1,batchCount
+         do ibatch=1,batchCount
 	  b(1:n,ibatch) = matmul( Aorg(1:n,1:n,ibatch), x(1:n,ibatch))
-       enddo
+         enddo
+       else
+         ld1 = size(Aorg,1)
+         inc1 = 1
+         inc2 = 1
+         mm = n
+         nn = n
+!$omp    parallel do private(ibatch)
+         do ibatch=1,batchCount
+           call Zgbmv(mm,nn,kl,ku,Aorg(1:ld1,1:n,ibatch),ld1,                &
+     &                x(1:n,ibatch),inc1,b(1:n,ibatch),inc2 )
+         enddo
+        endif
 ! 
 ! % ---------------------
 ! % perform factorization
@@ -217,11 +238,11 @@
 !      --------------------------------------------------
        is_full_c = is_full
        call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
-     &                  old2new,b,ldB,xnew,ldX,v,ldV,is_full_c,batchCount)
+     &             old2new,b,ldB,xnew,ldX,v,ldV,is_full_c,batchCount)
 
        call system_clock(t1,count_rate)
        call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
-     &                  old2new,b,ldB,xnew,ldX,v,ldV,is_full_c,batchCount)
+     &             old2new,b,ldB,xnew,ldX,v,ldV,is_full_c,batchCount)
        call system_clock(t2,count_rate)
        elapsed_time = dble(t2-t1)/dble(count_rate)
        print*,'bandsolve_batched_sm took ', elapsed_time,'sec'
@@ -247,10 +268,27 @@
 !      -------------------------------------------
 !      compute residual vector, res = Aorg * xdiff
 !      -------------------------------------------
-       do ibatch=1,batchCount
-	res(1:n,ibatch) = matmul( Aorg(1:n,1:n,ibatch), xdiff(1:n,ibatch))
-       enddo
+       if (is_full) then
+!$omp  parallel do private(ibatch)
+         do ibatch=1,batchCount
+	  res(1:n,ibatch) = matmul( Aorg(1:n,1:n,ibatch), xdiff(1:n,ibatch))
+         enddo
+       else
+         ld1 = size(Aorg,1)
+         inc1 = 1
+         inc2 = 1
+         mm = n
+         nn = n
+!$omp    parallel do private(ibatch)
+         do ibatch=1,batchCount
+           call Zgbmv(mm,nn,kl,ku,Aorg(1:ld1,1:n,ibatch),ld1,             &
+     &                xdiff(1:n,ibatch),inc1,res(1:n,ibatch),inc2 )
+         enddo
+        endif
+            
 
+       max_res = 0
+!$omp  parallel do private(i,ibatch) reduction(max:max_res)
        do ibatch=1,batchCount
        do i=1,n
 	  max_res = max( max_res, abs(res(i,ibatch)) )
