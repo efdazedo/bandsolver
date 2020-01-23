@@ -17,6 +17,7 @@ void bandsolve_batched_sm( int const n,
                            int const ldX,
                            T       v_[],
                            int const ldV,
+                           bool const is_full,
                            int const batchCount) 
 {
 
@@ -75,7 +76,8 @@ void bandsolve_batched_sm( int const n,
                                  &(old2new(1,ibatch)), 
                                  &(b(1,ibatch)),
                                  &(x(1,ibatch)),
-                                 &(v(1,ibatch)) );
+                                 &(v(1,ibatch)),
+                                 is_full );
         };
 
 

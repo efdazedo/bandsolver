@@ -19,7 +19,8 @@ void bandsolve_sm( int const n,
                 int const old2new_[],
                 T const b_[],
                 T       x_[],
-                T       v_[] )
+                T       v_[],
+                bool const is_full )
                
 {
 #ifdef USE_GPU
@@ -32,8 +33,16 @@ void bandsolve_sm( int const n,
         int const ix_start = 1;
         int const ix_size = 1;
 #endif
+        int const ldAB = ldA - 1;
+
+
+
         auto x = [&] (int const i) -> T& {
                 return( x_[ (i)-1 ] );
+        };
+
+        auto AB =[&] (int const i, int const j) -> T const & {
+                return( A_[ indx2f( kl+ku+1+i-j,j, ldA)] );
         };
 
         auto A = [&] (int const ia, int const ja) -> T const & {
@@ -99,8 +108,12 @@ void bandsolve_sm( int const n,
          char const uplo = 'L';
          char const trans = 'N';
          char const diag = 'U';
+         T const * const pA = (is_full) ? &(A(istart,istart)) : 
+                                          &(AB(istart,istart));
+         int const ld1 = (is_full) ? ldA  : ldAB;
+
          trmv_sm<T>(uplo,trans,diag,mm,nn,
-                    &(A(istart,istart)),ldA, &(x(istart)),&(v(1)) );
+                    pA, ld1, &(x(istart)),&(v(1)) );
         };
 
 
@@ -133,8 +146,12 @@ void bandsolve_sm( int const n,
             char const trans = 'N';
             char const diag = 'N';
 
+            T const * const pA = (is_full) ? &(A(i1,istart)) :
+                                             &(AB(i1,istart));
+            int const ld1 = (is_full) ? ldA : ldAB;
+
             trmv_sm<T>(uplo,trans,diag,mm,nn,
-                       &(A(i1,istart)),ldA, &(x(istart)), &(v(1)) );
+                       pA,ld1, &(x(istart)), &(v(1)) );
 
         };
 
@@ -179,8 +196,12 @@ void bandsolve_sm( int const n,
           char const trans = 'N';
           char const diag = 'N';
 
+          T const * const pA = (is_full) ? &(A(istart,istart)) :
+                                           &(AB(istart,istart));
+          int const ld1 = (is_full) ? ldA : ldAB;
+
           trmv_sm<T>(uplo,trans,diag,mm,nn,
-                     &(A(istart,istart)), ldA, &(x(istart)), &(v(1)) );
+                     pA, ld1, &(x(istart)), &(v(1)) );
          };
 
 
@@ -210,8 +231,12 @@ void bandsolve_sm( int const n,
           char const trans = 'N';
           char const diag = 'N';
 
+          int const ld1 = (is_full)? ldA : ldAB;
+          T const * const pA = is_full ? &(A(i1,istart)) :
+                                         &(AB(i1,istart));
+
           trmv_sm<T>(uplo,trans,diag,mm,nn,
-                     &(A(i1,istart)),ldA,&(x(istart)), &(v(1)) );
+                     pA,ld1,&(x(istart)), &(v(1)) );
          }
 
         SYNC_THREADS;

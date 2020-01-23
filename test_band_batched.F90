@@ -47,6 +47,8 @@
        type(c_ptr) :: dest, dsrc
 
        logical :: is_full = .true.
+       logical(kind=c_bool) :: is_full_c  
+
 
        if (idebug >= 1) then
                print*,'sizeof_cmplx,sizeof_real,sizeof_int',             &
@@ -213,12 +215,13 @@
 !      --------------------------------------------------
 !      1st call to warm up cache or perform data transfer
 !      --------------------------------------------------
+       is_full_c = is_full
        call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
-     &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
+     &                  old2new,b,ldB,xnew,ldX,v,ldV,is_full_c,batchCount)
 
        call system_clock(t1,count_rate)
        call bandsolve_batched_sm(n, kl_array,ku_array,A,ldA,                &
-     &                  old2new,b,ldB,xnew,ldX,v,ldV,batchCount)
+     &                  old2new,b,ldB,xnew,ldX,v,ldV,is_full_c,batchCount)
        call system_clock(t2,count_rate)
        elapsed_time = dble(t2-t1)/dble(count_rate)
        print*,'bandsolve_batched_sm took ', elapsed_time,'sec'

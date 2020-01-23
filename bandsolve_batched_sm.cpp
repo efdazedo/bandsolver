@@ -18,6 +18,7 @@ void bandsolve_batched_sm( int const n,
                            int const ldX,
                            zcomplex       v_[],
                            int const ldV,
+                           bool const is_full,
                            int const batchCount) 
 {
 
@@ -48,6 +49,7 @@ void bandsolve_batched_sm( int const n,
                            b_, ldB,
                            x_, ldX,
                            v_, ldV,
+                           is_full,
                            batchCount );
    dsync();
 #else
@@ -59,6 +61,7 @@ void bandsolve_batched_sm( int const n,
                            b_, ldB,
                            x_, ldX,
                            v_, ldV,
+                           is_full,
                            batchCount );
 
 

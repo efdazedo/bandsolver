@@ -2,6 +2,7 @@
 
       subroutine bandfactor( n, A, lda, old2new,kl_inout,ku_inout,info,  &
      &                       is_full )
+      use iso_c_binding
       implicit none
 
       integer, parameter :: idebug = 0
@@ -10,7 +11,7 @@
       integer, intent(inout) :: old2new(*)
       integer, intent(inout)  :: kl_inout, ku_inout, info
       complex(kind=wp), intent(inout) :: A(lda,*)
-      logical, intent(in) :: is_full
+      logical(kind=c_bool), intent(in) :: is_full
 
 
 
