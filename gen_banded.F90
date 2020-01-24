@@ -12,7 +12,7 @@
       integer :: i,j
       real(kind=wp) :: x_re(n), x_im(n)
       complex(kind=wp) :: aij
-      integer, parameter :: idebug = 0
+      integer, parameter :: idebug = 1
       logical :: isok
       integer :: istart,iend
 
