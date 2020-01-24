@@ -6,8 +6,8 @@
       implicit none
       integer, intent(in) :: m,n,kl,ku,ldAB,incx,incy
       complex(kind=wp), intent(in) :: AB(ldAB,n)
-      complex(kind=wp), intent(in) :: x(*)
-      complex(kind=wp), intent(inout) :: y(*)
+      complex(kind=wp), intent(in) :: x(1+(n-1)*incx)
+      complex(kind=wp), intent(inout) :: y(1+(m-1)*incy)
 
       integer :: i,j,ix,iy
       complex(kind=wp) :: aij, xj

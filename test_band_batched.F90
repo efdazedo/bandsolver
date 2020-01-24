@@ -205,7 +205,12 @@
         max_ku = maxval( ku_array(1:batchCount) )
         avg_ku = sum( ku_array(1:batchCount) )/batchCount
 
-        ldV = max(1,max(max_kl,max_ku))
+        if (is_full) then
+          ldV = max(1,max(max_kl,max_ku))
+        else
+          ldV = max(1,kl + ku)
+        endif
+
         if (idebug >= 1) then
             min_kl = minval( kl_array(1:batchCount) )
             max_kl = maxval( kl_array(1:batchCount) )

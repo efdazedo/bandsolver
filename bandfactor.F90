@@ -168,7 +168,7 @@
        nn = isize
        alpha = 1
        call Ztrsm( side,uplo,trans,diag, mm,nn,alpha,                                           &
-     &             Lmat,ldA,Linv,ldL)
+     &             Lmat,ldL,Linv,ldL)
 
 !       -------------------------------------------------------
 !      copy lower triangular Linv back to A, note Linv also is unit diagonal
@@ -241,7 +241,7 @@
         nn = isize
         alpha = 1
         call Ztrsm( side, uplo, trans, diag, mm,nn,alpha,                                   &
-     &              Umat,ldA,Uinv,ldU)
+     &              Umat,ldU,Uinv,ldU)
 
 !       ---------------
 !       copy upper triangular Uinv back to A

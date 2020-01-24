@@ -233,13 +233,13 @@ void bandsolve_sm( int const n,
          int const nn = isize;
 
          if ((mm >= 1) && (nn >= 1)) {
-          char const uplo = 'L';
+          char const uplo  = 'L';
           char const trans = 'N';
-          char const diag = 'N';
+          char const diag  = 'N';
 
           int const ld1 = (is_full)? ldA : ldAB;
-          T const * const pA = is_full ? &(A(i1,istart)) :
-                                         &(AB(i1,istart));
+          T const * const pA = (is_full) ? &(A(i1,istart)) :
+                                           &(AB(i1,istart));
 
           trmv_sm<T>(uplo,trans,diag,mm,nn,
                      pA,ld1,&(x(istart)), &(v(1)) );
