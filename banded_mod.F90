@@ -76,6 +76,14 @@
         complex*16 alpha, A(ldA,*), B(ldB,*)
         end subroutine Ztrsm
 
+        subroutine Zgbtrf(m,n,kl,ku,AB,ldAB,ipiv,info)
+        implicit none
+        integer m,n,kl,ku,ldAB,info
+        integer ipiv(*)
+        complex*16 AB(ldAB,*)
+        end subroutine Zgbtrf
+
+
         subroutine Zgetrf(m,n,A,ldA,ipiv,info)
         implicit none
         integer m,n,ldA,info
