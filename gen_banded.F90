@@ -1,5 +1,5 @@
 #define AB(i,j) A(kl+ku+1+(i)-(j),(j))
-      subroutine gen_banded(n,kl,ku, A, ldA, is_full )
+      subroutine gen_banded(n,kl,ku, A, ldA, is_full, is_diag_dominant)
       implicit none
 ! % ----------------------
 ! % generate banded matrix of size n by n
@@ -8,9 +8,11 @@
       integer, intent(in) :: n, kl, ku, ldA
       complex(kind=wp), intent(inout) :: A(ldA,n)
       logical, intent(in) :: is_full
+      logical, intent(in) :: is_diag_dominant
 
       integer :: i,j
       real(kind=wp) :: x_re(n), x_im(n)
+      real(kind=wp) :: di
       complex(kind=wp) :: aij
       integer, parameter :: idebug = 1
       logical :: isok
@@ -58,10 +60,10 @@
            A(:,j) = 0
            istart=max(1,j-ku)
            iend = min(n,j+kl)
-           call random_number( x_re(istart:iend))
-           call random_number( x_im(istart:iend))
-           x_re(istart:iend) = 2*x_re(istart:iend) - 1
-           x_im(istart:iend) = 2*x_im(istart:iend) - 1
+           call random_number( x_re(1:n))
+           call random_number( x_im(1:n))
+           x_re(1:n) = 2*x_re(1:n) - 1
+           x_im(1:n) = 2*x_im(1:n) - 1
            do i=istart,iend
              aij = cmplx( x_re(i), x_im(i), kind=wp)
              AB(i,j) = aij 
@@ -71,14 +73,15 @@
 
        endif
 
-      if (idebug >= 1) then
+      if (is_diag_dominant) then
 !      -----------------------------
 !      make diagonal to be very large
 !      to avoid pivoting
 !      -----------------------------
        do j=1,n
          i = j
-         aij = max(1.0d4,2.0d0*n*n)
+         di = max(1.0d4,2.0d0*n*n)
+         aij = cmplx( di, -di, kind=wp)
          if (is_full) then
            A(i,j) = aij
          else

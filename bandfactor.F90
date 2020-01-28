@@ -66,6 +66,20 @@
         endif
       endif
 
+!     ----------
+!     check ipiv
+!     ----------
+      do i=1,n-1
+        j = ipiv(i)
+        isok = (j >= i)
+        if (.not.isok) then
+           print*,'bandfactor: i,ipiv(i) ',i,ipiv(i)
+           stop '** error in bandfactor '
+        endif
+      enddo
+
+
+
 !     ---------------------------------------
 !     compute lower (kl) and upper (ku) bands
 !     ---------------------------------------

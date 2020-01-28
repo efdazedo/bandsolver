@@ -15,12 +15,15 @@
 
 
       logical :: use_trmv_sm = .true.
-      integer, parameter :: idebug = 0
+      integer, parameter :: idebug = 1
       integer :: istat
       logical :: is_square
       integer :: inc, incx, max_k
       integer :: i1,i2,ib,i,j,k,istart,iend,isize,nn
       character :: uplo, trans, diag
+
+      integer :: icount(1:n)
+      logical :: isok
 
 !     ---------------
 !     inline function
@@ -40,6 +43,22 @@
 ! % perform permutation
 ! % -------------------
 
+       if (idebug >= 1) then
+!       -------------
+!       check old2new
+!       -------------
+        icount(1:n) = 0
+        do i=1,n
+          j = old2new(i)
+          icount(j) = icount(j) + 1
+        enddo
+        isok = all( icount(1:n) .eq. 1 )
+        if (.not.isok) then
+             print*,'bandsolve: error in old2new'
+             stop '** error in bandsolve ** '
+        endif
+        
+       endif
        x(1:n) = b( old2new(1:n) )
 
       if (idebug >= 2) then

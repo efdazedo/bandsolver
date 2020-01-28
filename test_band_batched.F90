@@ -17,13 +17,14 @@
        integer, pointer :: old2new(:,:)
 
        integer :: ldA,ldB,ldX,ldV
-       integer :: ibatch, i, info
+       integer :: ibatch, i, j, info
        integer :: min_kl, max_kl, avg_kl
        integer :: min_ku, max_ku, avg_ku
        logical :: isok
 
        real(kind=wp) :: err 
        real(kind=wp) :: x_re(n), x_im(n)
+       integer :: icount(n)
        integer, pointer :: kl_array(:)
        integer, pointer :: ku_array(:)
        integer :: info_array(batchCount)
@@ -48,6 +49,7 @@
        type(c_ptr) :: d_A, d_Aorg, d_b, d_res, d_x, d_xdiff, d_xnew
        type(c_ptr) :: dest, dsrc
 
+       logical, parameter :: is_diag_dominant = .true.
        logical(kind=c_bool) :: is_full_c  
 
 
@@ -98,7 +100,8 @@
       ku_array(:) = ku
 
 
-      call gen_banded_batched( n, kl, ku, A, lda, is_full, batchCount)
+      call gen_banded_batched( n, kl, ku, A, lda,                        &
+     &              is_full, is_diag_dominant, batchCount)
 
 !$omp parallel do private(ibatch)
       do ibatch=1,batchCount
@@ -196,6 +199,35 @@
 	  enddo
 	  return
 	endif
+
+!       -------------
+!       check old2new
+!       -------------
+        if (idebug >= 1) then
+          do ibatch=1,batchCount
+             icount(1:n) = 0
+             do i=1,n
+               j = old2new(i,ibatch)
+               isok = (1 <= j) .and. (j <= n)
+               if (.not.isok) then
+                 print*,'test_band_batched:invalid old2new'
+                 print*,'ibatch,i,old2new ',ibatch,i,old2new(i,ibatch)
+                 stop '** error in test_band_batched '
+               endif
+               icount(j) = icount(j) + 1
+             enddo
+
+             do i=1,n
+                isok = (icount(i).eq.1)
+                if (.not.isok) then
+                 print*,'test_band_batched: invalid icount'
+                 print*,'i,icount(i) ',   i, icount(i)
+                 stop '** error in test_band_batched '
+                endif
+             enddo
+           enddo
+          endif
+
 
         min_kl = minval( kl_array(1:batchCount) )
         max_kl = maxval( kl_array(1:batchCount) )
