@@ -49,7 +49,7 @@
        type(c_ptr) :: d_A, d_Aorg, d_b, d_res, d_x, d_xdiff, d_xnew
        type(c_ptr) :: dest, dsrc
 
-       logical, parameter :: is_diag_dominant = .true.
+       logical, parameter :: is_diag_dominant = .false.
        logical(kind=c_bool) :: is_full_c  
 
 
@@ -263,7 +263,7 @@
         call c_f_pointer( d_v, v, (/ ldV, batchCount /) )
 #else
         allocate( v(ldV,batchCount) )
-        d_v = c_loc(d_v)
+        d_v = c_loc(v)
 #endif
 
        ldB = size(B,1)
