@@ -230,6 +230,10 @@
 #include "bandsolve_batched.F90"
 #endif
 
+#include "zgbtf2_nopivot.F90"
+#include "zgbtrf_nopivot.F90"
+
 #include "test_band_batched.F90"
+
 
       end module banded_mod

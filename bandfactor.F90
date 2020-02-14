@@ -59,7 +59,7 @@
         endif
 
 
-        call Zgbtrf( mm,nn,kl,ku,A,ldA,ipiv,info)
+        call Zgbtrf_nopivot( mm,nn,kl,ku,A,ldA,ipiv,info)
         if (info.ne.0) then
                 print*,'bandfactor: Zgbtrf return info=',info
                 return
@@ -115,7 +115,7 @@
 !      ----------------------
 !      note ku is increased
 !      ----------------------
-       ku = ku + kl
+       ku = ku_inout + kl_inout 
        
        endif
 !
@@ -172,6 +172,18 @@
           endif
         enddo
        enddo
+
+       if (idebug >= 2) then
+          print*,'=== istart = ',istart,' ==== '
+          do j=1,isize
+          do i=1,isize
+             Lij = Lmat(i,j)
+             if (Lij .ne. 0) then
+                print *, 'Lmat(',i,',',j,') = ', Lij
+             endif
+          enddo
+          enddo
+       endif
 
 
        side = 'Left'
@@ -307,7 +319,9 @@
            else
                Lij = AB(i,j)
            endif
-           print *,'L(',i,',',j,') = ', Lij
+           if (Lij .ne. 0) then
+             print *,'L(',i,',',j,') = ', Lij
+           endif
           enddo
           enddo
 
@@ -318,8 +332,14 @@
            else
                Uij = AB(i,j)
            endif
-           print *,'U(',i,',',j,') = ',Uij
+           if (Uij .ne. 0) then
+             print *,'U(',i,',',j,') = ',Uij
+           endif
           enddo
+          enddo
+
+          do j=1,n
+            print*,'ipiv(',j,') = ',ipiv(j)
           enddo
 
           do j=1,n

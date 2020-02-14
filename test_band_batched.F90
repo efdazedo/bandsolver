@@ -49,7 +49,7 @@
        type(c_ptr) :: d_A, d_Aorg, d_b, d_res, d_x, d_xdiff, d_xnew
        type(c_ptr) :: dest, dsrc
 
-       logical, parameter :: is_diag_dominant = .false.
+       logical, parameter :: is_diag_dominant = .true.
        logical(kind=c_bool) :: is_full_c  
 
 

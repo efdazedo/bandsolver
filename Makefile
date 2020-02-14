@@ -10,6 +10,8 @@ FSRC=\
 	bandsolve_batched.F90  \
 	gen_banded.F90  \
 	gen_banded_batched.F90  \
+	zgbtf2_nopivot.F90 \
+        zgbtrf_nopivot.F90 \
 	test_band_batched.F90
 
 CSRC=\

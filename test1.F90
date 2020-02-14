@@ -6,11 +6,19 @@
       integer :: icase
       logical :: is_full
       real(kind=wp) :: max_err, max_res
+      integer, parameter :: idebug = 1
 
-      n = 100
-      kl = 11
-      ku = 13
-      batchCount = 10
+      if (idebug >= 1) then
+           n = 4
+           kl = 1
+           ku = 1
+           batchCount = 1
+      else
+           n = 100
+           kl = 11
+           ku = 13
+           batchCount = 10
+      endif
 
       print*,'n, kl, ku, batchCount ', n,kl,ku,batchCount
 
@@ -22,6 +30,7 @@
         print*,'max_err = ',max_err
         print*,'max_res = ',max_res
       enddo
+
 
 !     ----------------
 !     performance test
