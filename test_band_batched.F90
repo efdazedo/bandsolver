@@ -29,6 +29,7 @@
        integer, pointer :: ku_array(:)
        integer :: info_array(batchCount)
        integer :: mm,nn,ld1, inc1, inc2
+       integer :: istat
 
        integer :: t1,t2,count_rate
        real(kind=wp) :: elapsed_time
@@ -83,13 +84,26 @@
 
       nbytes = (sizeof_cmplx * ldA * n) * batchCount
       d_A = dmalloc( nbytes )
+      if (d_A.eq.c_null_ptr) then
+         print*,'dmalloc return null in d_A'
+         stop '** out of memory **'
+      endif
       d_Aorg = dmalloc( nbytes )
+      if (d_Aorg.eq.c_null_ptr) then
+         print*,'dmalloc return null in d_Aorg'
+         stop '** out of memory **'
+      endif
+
       call c_f_pointer( d_A, A, (/ ldA, n, batchCount /) )
       call c_f_pointer( d_Aorg, Aorg, (/ ldA, n, batchCount /) )
 #else
       allocate( kl_array(batchCount), ku_array(batchCount) )
       allocate( old2new(n,batchCount) )
-      allocate( A(ldA, n, batchCount), Aorg(ldA,n,batchCount)  )
+      allocate(A(ldA,n,batchCount),Aorg(ldA,n,batchCount),stat=istat)
+      if (istat.ne.0) then
+         print*,'allocate(A,Aorg) return istat'
+         stop '** out of memory **'
+      endif
 
       d_kl_array = c_loc(kl_array)
       d_ku_array = c_loc(ku_array)

@@ -35,10 +35,10 @@
 !     ----------------
 !     performance test
 !     ----------------
-      n = 512
+      n = 1024
       batchCount = 256
-      kl = 16
-      ku = 17
+      kl = 32
+      ku = 32
 
       print*,'n, kl, ku, batchCount ', n,kl,ku,batchCount
 
