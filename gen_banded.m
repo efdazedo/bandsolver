@@ -21,7 +21,8 @@ for i=1:n,
 end;
 end;
 
-if (idebug >= 1),
+is_diag_dominant = 0;
+if (is_diag_dominant),
    for j=1:n,
        i = j;
        A(i,i) = max( 10^4, 2*n*n);

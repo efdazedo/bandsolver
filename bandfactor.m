@@ -21,6 +21,16 @@ end;
 % ---------
 [L,U,P] = lu(A);
 
+% ---------------------------
+% generate permutation vector
+% ---------------------------
+ip = reshape( 1:n, n,1);
+old2new(1:n) = P*ip(1:n);
+if (idebug >= 2),
+   disp(sprintf('old2new: '));
+   old2new
+end;
+
 is_lower = (norm(tril(L) - L,1) == 0);
 is_upper = (norm(triu(U) - U,1) == 0);
 isok = (is_lower && is_upper);
@@ -64,7 +74,24 @@ for istart=1:kl:n,
     % Compute  using  DTRSM
     % L( istart:iend, istart:iend) = inv( L(istart:iend,istart:iend) );
     % -----------------------------------------------------------------
-    L( istart:iend, istart:iend) =  L(istart:iend,istart:iend) \ eye( isize, isize);
+    Lmat(1:isize,1:isize) = L(istart:iend,istart:iend);
+    Linv(1:isize,1:isize) = Lmat(1:isize,1:isize) \ eye(isize,isize);
+    if (idebug >= 2),
+       disp(sprintf('=== istart = %g ==== ', istart ));
+
+       for j=1:isize,
+       for i=1:isize,
+          Lij = Lmat(i,j);
+          if (Lij != 0),
+             disp(sprintf('Lmat( %d,%d) = %g', ...
+                                  i,j,    Lij ));
+          end;
+       end;
+       end;
+
+    end;
+
+    L( istart:iend, istart:iend) =  Linv(1:isize,1:isize);
 end;
 
 
@@ -79,24 +106,25 @@ for istart=1:ku:n,
 end;
 
 
-% ---------------------------
-% generate permutation vector
-% ---------------------------
-ip = reshape( 1:n, n,1);
-old2new(1:n) = P*ip(1:n);
 
 if (idebug >= 2),
    for j=1:n,
    for i=(j+1):n,
-     disp(sprintf('L(%d,%d) = %e', ...
-                     i, j,    L(i,j) ));
+     Lij = L(i,j);
+     if (Lij != 0),
+       disp(sprintf('L(%d,%d) = %e', ...
+                       i, j,    L(i,j) ));
+     end;
    end;
    end;
 
    for j=1:n,
    for i=1:j,
-     disp(sprintf('U(%d,%d) = %e ', ...
-                     i,  j,   U(i,j) ));
+     Uij = U(i,j);
+     if (Uij != 0),
+       disp(sprintf('U(%d,%d) = %e ', ...
+                       i,  j,   U(i,j) ));
+     end;
    end;
    end;
 

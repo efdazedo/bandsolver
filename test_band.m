@@ -7,6 +7,12 @@ idebug = 1;
 
 A = gen_banded(n,kl,ku);
 
+use_sparse = 0;
+if (use_sparse), 
+        [ii,jj,aij] = find(A);
+        A = sparse(ii,jj,aij, n,n);
+end;
+
 % -------------------------
 % generate solution and rhs
 % -------------------------

@@ -9,7 +9,7 @@
       logical, intent(in)  :: is_full 
       real(kind=wp), intent(out) :: max_err, max_res
 
-       integer, parameter :: idebug = 1
+       integer, parameter :: idebug = 0
        complex(kind=wp), pointer :: A(:,:,:)
        complex(kind=wp), pointer :: Aorg(:,:,:)
        complex(kind=wp), pointer :: x(:,:), xnew(:,:),xdiff(:,:) 
@@ -84,12 +84,12 @@
 
       nbytes = (sizeof_cmplx * ldA * n) * batchCount
       d_A = dmalloc( nbytes )
-      if (d_A.eq.c_null_ptr) then
+      if (.not.c_associated(d_A)) then
          print*,'dmalloc return null in d_A'
          stop '** out of memory **'
       endif
       d_Aorg = dmalloc( nbytes )
-      if (d_Aorg.eq.c_null_ptr) then
+      if (.not.c_associated(d_Aorg)) then
          print*,'dmalloc return null in d_Aorg'
          stop '** out of memory **'
       endif

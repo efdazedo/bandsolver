@@ -113,9 +113,9 @@
 
        else
 !      ----------------------
-!      note ku is increased
+!      note change in ku
 !      ----------------------
-       ku = ku_inout + kl_inout 
+        ku = ku_inout + kl_inout 
        
        endif
 !
