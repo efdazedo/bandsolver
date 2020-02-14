@@ -201,7 +201,11 @@
      &              info_array, is_full, batchCount)
        call system_clock(t2,count_rate)
        elapsed_time = dble(t2-t1)/dble(count_rate)
-       print*,'bandfactor_batched took ',elapsed_time,'sec'
+       if (is_full) then
+         print*,'full bandfactor_batched took ',elapsed_time,'sec'
+       else
+         print*,'sparse bandfactor_batched took ',elapsed_time,'sec'
+       endif
 
        isok = all( info_array(1:batchCount).eq.0 )
        if (.not.isok) then
@@ -298,7 +302,11 @@
      &             old2new,b,ldB,xnew,ldX,v,ldV,is_full_c,batchCount)
        call system_clock(t2,count_rate)
        elapsed_time = dble(t2-t1)/dble(count_rate)
-       print*,'bandsolve_batched_sm took ', elapsed_time,'sec'
+       if (is_full) then
+         print*,'full bandsolve_batched_sm took ', elapsed_time,'sec'
+       else
+         print*,'sparse bandsolve_batched_sm took ', elapsed_time,'sec'
+       endif
 
 
 
